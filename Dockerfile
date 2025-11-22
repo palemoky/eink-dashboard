@@ -68,8 +68,8 @@ COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/pic/Font.ttc r
 # 环境变量
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
-# 显式指定 gpiozero 使用 RPi.GPIO 后端，消除 lgpio 回退警告 (适用于 Pi 3/4)
-ENV GPIOZERO_PIN_FACTORY=RPi.GPIO
+# 显式指定 gpiozero 使用 RPi.GPIO 后端 (注意：别名必须是 rpigpio，不能是 RPi.GPIO)
+ENV GPIOZERO_PIN_FACTORY=rpigpio
 
 # 创建数据目录并声明卷
 RUN mkdir -p /app/data && chown -R root:root /app/data

@@ -5,7 +5,7 @@
 [![GitHub](https://img.shields.io/github/license/palemoky/eink-panel)](https://github.com/palemoky/eink-panel)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/palemoky/eink-panel/release.yml)](https://github.com/palemoky/eink-panel/actions)
 
-A personalized, asynchronous dashboard for Waveshare E-Ink displays, built with Python 3.11 and Docker.
+A personalized, asynchronous dashboard for Waveshare E-Ink displays, built with Python and Docker.
 
 ## 🚀 Quick Start with Docker
 
