@@ -2,6 +2,7 @@ httpx
 tenacity
 pendulum
 pydantic-settings
+borax
 Pillow
 RPi.GPIO
 spidev

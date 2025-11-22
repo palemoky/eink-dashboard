@@ -18,6 +18,11 @@ class Settings(BaseSettings):
     # GitHub 统计时区偏移（小时），默认为 8 (UTC+8)
     GITHUB_TIMEZONE_OFFSET: int = 8
 
+    # 个性化配置
+    USER_NAME: str = "Xinyu"
+    BIRTHDAY: str = ""  # 格式: "MM-DD", 例如 "11-22"
+    ANNIVERSARY: str = ""  # 格式: "MM-DD"
+
     # API Keys
     OPENWEATHER_API_KEY: str = ""
     CITY_NAME: str = "Beijing"

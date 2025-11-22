@@ -3,11 +3,13 @@ from PIL import Image, ImageDraw
 import datetime
 from .config import Config
 from .renderer import Renderer
+from .holiday import HolidayManager
 
 
 class DashboardLayout:
     def __init__(self):
         self.renderer = Renderer()
+        self.holiday_manager = HolidayManager()
 
         # === 布局常量定义 ===
         # 顶部区域
@@ -46,6 +48,19 @@ class DashboardLayout:
         # 1. 创建画布
         image = Image.new("1", (width, height), 255)
         draw = ImageDraw.Draw(image)
+
+        # 0. 检查节日 (优先显示)
+        holiday = self.holiday_manager.get_holiday()
+        if holiday:
+            self.renderer.draw_full_screen_message(
+                draw, 
+                width, 
+                height, 
+                holiday["title"], 
+                holiday["message"], 
+                holiday.get("icon")
+            )
+            return image
 
         # 2. 提取数据
         now = datetime.datetime.now()
