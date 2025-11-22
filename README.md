@@ -3,9 +3,9 @@
 [![Docker Hub](https://img.shields.io/docker/v/palemoky/eink-panel?label=Docker%20Hub&logo=docker)](https://hub.docker.com/r/palemoky/eink-panel)
 [![Docker Image Size](https://img.shields.io/docker/image-size/palemoky/eink-panel/latest)](https://hub.docker.com/r/palemoky/eink-panel)
 [![GitHub](https://img.shields.io/github/license/palemoky/eink-panel)](https://github.com/palemoky/eink-panel)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/palemoky/eink-panel/docker-build.yml?branch=main)](https://github.com/palemoky/eink-panel/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/palemoky/eink-panel/release.yml?branch=main)](https://github.com/palemoky/eink-panel/actions)
 
-A personalized, asynchronous dashboard for Waveshare E-Ink displays, built with Python 3.13 and Docker.
+A personalized, asynchronous dashboard for Waveshare E-Ink displays, built with Python 3.11 and Docker.
 
 ## 🚀 Quick Start with Docker
 
