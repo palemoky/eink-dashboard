@@ -7,6 +7,7 @@ services:
     devices:
       - /dev/spidev0.0:/dev/spidev0.0 # SPI 接口
       - /dev/gpiomem:/dev/gpiomem
+      - /dev/mem:/dev/mem # RPi.GPIO 可能需要访问 /dev/mem
     environment:
       - TZ=${TIMEZONE:-Asia/Shanghai}
     volumes:
