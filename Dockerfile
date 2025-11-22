@@ -45,28 +45,21 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # 从 Builder 阶段复制安装好的包
 COPY --from=builder /install /usr/local
 
-# 创建非 root 用户
-RUN useradd -m appuser
+# 保持使用 root 用户以访问 /dev/mem 和 GPIO
+# RUN useradd -m appuser
+# USER appuser
 
 # 复制源代码
 COPY . .
 
 # 从 Downloader 阶段复制官方驱动到 src/lib/waveshare_epd (覆盖本地文件)
-# 注意：这会覆盖本地的 waveshare_epd 目录，确保使用官方最新驱动
 COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/lib/waveshare_epd/epdconfig.py src/lib/waveshare_epd/
 COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/lib/waveshare_epd/epd7in5_V2.py src/lib/waveshare_epd/
-# 复制 __init__.py 确保它是包
 COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/lib/waveshare_epd/__init__.py src/lib/waveshare_epd/
 
 # 复制字体 (确保 resources 目录存在)
 RUN mkdir -p resources
 COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/pic/Font.ttc resources/
-
-# 设置权限
-RUN chown -R appuser:appuser /app
-
-# 切换到非 root 用户
-USER appuser
 
 # 环境变量
 ENV PYTHONPATH=/app
