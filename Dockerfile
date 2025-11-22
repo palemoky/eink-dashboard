@@ -48,8 +48,10 @@ COPY --from=builder /install /usr/local
 # 创建非 root 用户
 RUN useradd -m appuser
 
-# 复制源代码 (先复制，避免后续被覆盖)
-COPY . .
+# 复制源代码 (明确复制 src 目录，确保不会被忽略)
+COPY src/ src/
+COPY requirements.txt .
+COPY .env.example .
 
 # 从 Downloader 阶段复制官方驱动到 src/lib/waveshare_epd (覆盖本地文件)
 # 注意：这会覆盖本地的 waveshare_epd 目录，确保使用官方最新驱动

@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# CI/CD
+.github
+
+# Documentation
+README.md
+docs/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.pytest_cache
+.coverage
+htmlcov
+
+# Virtual Environment
+venv
+env
+ENV
+.venv
+
+# Environment files (will be mounted as volume)
+.env
+.env.local
+
+# Output files (will be mounted as volumes)
+*.bmp
+*.png
+*.jpg
+*.jpeg
+mock_display_output.png
+screenshot.bmp
+data_cache.json
+
+# Logs
+*.log
+logs
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
