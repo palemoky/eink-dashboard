@@ -107,7 +107,7 @@ jobs:
           provenance: false
           sbom: false
 
-      - name: Notify via Xiaomi Box
+      - name: Notify via Xiaomi Speaker
         if: failure()
         env:
           MI_USER: ${{ secrets.MI_USER }}
@@ -115,7 +115,7 @@ jobs:
           MI_BOX_DID: ${{ secrets.MI_BOX_DID }}
           NOTIFY_MSG: "警报，项目 ${{ github.repository }} 构建失败！"
         run: |
-          pip install miservice aiohttp
+          pip install aiohttp aiofiles miservice
           python .github/scripts/notify_xiaomi_speaker.py
 
   # 同步 README 到 Docker Hub (在镜像构建成功后)
