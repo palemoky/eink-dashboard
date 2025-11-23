@@ -116,21 +116,25 @@ class DashboardLayout:
         r = self.renderer
         item_type = item_data["type"]
 
+        # 统一的第一行基线 Y 坐标
+        line1_y = top_y
+        line2_y = top_y + 50  # 第二行统一偏移
+
         match item_type:
             case "weather":
                 data = item_data["data"]
-                # 第一行：城市 温度
+                # 第一行：城市 温度（与其他组件对齐）
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    top_y,
+                    line1_y,
                     f"{Config.CITY_NAME} {data['temp']}°",
                     font=r.font_m,
                     align_y_center=False,
                 )
 
-                # 第二行：图标 + 描述
-                icon_y = top_y + 55
+                # 第二行：图标 + 描述（与其他组件第二行对齐）
+                icon_y = line2_y
                 w_main = data["icon"]  # OpenWeatherMap main status
 
                 # 根据天气状态选择图标
@@ -160,18 +164,20 @@ class DashboardLayout:
 
             case "date":
                 data = item_data["data"]
+                # 第一行：日期（与其他组件对齐）
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    top_y + 5,
+                    line1_y,
                     data.strftime("%a, %d"),
                     font=r.font_date_big,
                     align_y_center=False,
                 )
+                # 第二行：月份年份（与其他组件第二行对齐）
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    top_y + 50,
+                    line2_y,
                     data.strftime("%b %Y"),
                     font=r.font_date_small,
                     align_y_center=False,
@@ -179,31 +185,31 @@ class DashboardLayout:
 
             case "time":
                 data = item_data["data"]
-                r.draw_centered_text(
-                    draw, center_x, top_y, "Updated", font=r.font_s, align_y_center=False
-                )
+                # 第一行：时间（与其他组件对齐）
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    top_y + 35,
+                    line1_y,
                     data.strftime("%H:%M"),
                     font=r.font_time,
                     align_y_center=False,
                 )
 
             case "custom":
+                # 第一行：标签（与其他组件对齐）
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    top_y,
+                    line1_y,
                     item_data["label"],
                     font=r.font_s,
                     align_y_center=False,
                 )
+                # 第二行：值（与其他组件第二行对齐）
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    top_y + 35,
+                    line2_y,
                     item_data["value"],
                     font=r.font_time,
                     align_y_center=False,
