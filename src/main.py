@@ -11,6 +11,7 @@ try:
     from .config import Config
     from .data_manager import DataManager
     from .drivers.factory import get_driver
+    from .holiday import HolidayManager
     from .layout import DashboardLayout
 except ImportError:
     # 如果相对导入失败，添加父目录到路径并使用绝对导入
@@ -18,6 +19,7 @@ except ImportError:
     from src.config import Config
     from src.data_manager import DataManager
     from src.drivers.factory import get_driver
+    from src.holiday import HolidayManager
     from src.layout import DashboardLayout
 
 # 配置日志（支持环境变量控制日志级别）
@@ -152,8 +154,6 @@ async def main():
                 logger.info("Display updated and put to sleep.")
 
                 # 4. 检查是否是节日
-                from .holiday import HolidayManager
-
                 holiday_manager = HolidayManager()
                 holiday = holiday_manager.get_holiday()
 
