@@ -107,32 +107,40 @@ pip install uv
 1.  **Install Dependencies**:
     ```bash
     # Using uv (recommended, much faster)
-    uv pip install -r requirements.txt
-    uv pip install -r requirements-dev.txt
+    uv sync --all-extras
     
-    # Or using pip (fallback)
-    pip install -r requirements.txt
-    pip install -r requirements-dev.txt
+    # Or install only production dependencies
+    uv sync
     ```
 
 2.  **Run with Mock Driver**:
     ```bash
     # This will generate 'mock_display_output.png' instead of driving a screen
     export MOCK_EPD=true
-    python3 -m src.main
+    uv run python -m src.main
     ```
 
 3.  **Run Tests**:
     ```bash
-    PYTHONPATH=. pytest tests/
+    uv run pytest tests/
     ```
 
 ### Why uv?
 
 - ⚡ **10-100x faster** than pip for dependency installation
-- 🔒 Better dependency resolution
+- 🔒 **Reproducible builds** with `uv.lock` file
 - 💾 Smart caching across projects
 - ✅ 100% compatible with pip and requirements.txt
+
+### Legacy pip support
+
+If you prefer using pip, you can still use the old `requirements.txt` files:
+```bash
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+```
+
+However, we recommend using `uv sync` for better dependency management.
 
 ## 📁 Project Structure
 

@@ -27,12 +27,16 @@ ADD --chmod=755 https://astral.sh/uv/install.sh /install.sh
 RUN /install.sh && rm /install.sh
 ENV PATH="/root/.cargo/bin:$PATH"
 
-COPY requirements.txt .
-# 使用 uv 安装依赖 (比 pip 快 10-100 倍)
-# --system: 直接安装到系统 Python
-# --prefix: 安装到指定目录
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# 使用 uv sync 安装依赖 (使用 uv.lock 确保可重现构建)
+# --frozen: 使用 uv.lock 而不重新解析依赖
+# --no-dev: 不安装开发依赖
+# --extra hardware: 安装硬件依赖 (RPi.GPIO, gpiozero, spidev)
+# --no-install-project: 不安装项目本身（只安装依赖）
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install --system --prefix=/install -r requirements.txt
+    uv sync --frozen --no-dev --extra hardware --no-install-project
 
 # Stage 2: Runtime
 FROM python:3.14-slim

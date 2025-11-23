@@ -26,18 +26,17 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install --system -r requirements.txt
-          uv pip install --system -r requirements-dev.txt
+          uv sync --frozen --all-extras
 
       - name: Run tests
         run: |
-          PYTHONPATH=. pytest tests/
+          uv run pytest tests/
 
       - name: Code quality checks
         run: |
-          black --check src/ tests/
-          isort --check src/ tests/
-          ruff check src/ tests/
+          uv run black --check src/ tests/
+          uv run isort --check src/ tests/
+          uv run ruff check src/ tests/
 
       - name: Notify via Xiaomi Speaker
         if: failure()
