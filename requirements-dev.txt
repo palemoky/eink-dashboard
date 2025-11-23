@@ -3,5 +3,7 @@ black==24.1.1
 isort==5.13.2
 ruff==0.1.15
 mypy==1.8.0
+# Testing
 pytest-cov==4.1.0
+pytest-xdist>=3.0.0  # 并发测试
 types-Pillow==10.2.0.20240125

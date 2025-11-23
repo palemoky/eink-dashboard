@@ -41,8 +41,20 @@ warn_unused_configs = true
 exclude = ["src/lib"]
 
 [tool.pytest.ini_options]
+minversion = "6.0"
+addopts = [
+    "-ra",
+    "-q",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--cov-report=xml",
+    "-n auto",  # 自动并发测试
+]
 testpaths = ["tests"]
+pythonpath = ["."]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --cov=src --cov-report=term-missing"

@@ -51,9 +51,9 @@ while read local_ref local_sha remote_ref remote_sha; do
         echo "${YELLOW}🐍 Detected Python file changes. Running tests...${NC}"
         echo ""
 
-        # 运行 pytest
-        echo "${BLUE}🧪 Running pytest...${NC}"
-        if ! PYTHONPATH=. pytest tests/; then
+        # 运行 pytest（并发）
+        echo "${BLUE}🧪 Running pytest with parallel execution...${NC}"
+        if ! PYTHONPATH=. pytest -n auto tests/; then
             echo ""
             echo "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
             echo "${RED}❌ ERROR: Python tests failed.${NC}"
