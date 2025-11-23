@@ -1,0 +1,55 @@
+#!/bin/sh
+# Pre-commit hook for Python code formatting and linting
+
+# 获取 Git 仓库的根目录
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT" || exit 1
+
+echo "🔍 Checking staged Python files..."
+
+# 查找已暂存的 Python 文件
+staged_py_files=$(git diff --cached --name-only --diff-filter=ACMR | grep "\.py$")
+
+# 如果没有 Python 文件被暂存，直接退出
+if [ -z "$staged_py_files" ]; then
+    echo "✅ No Python files to check"
+    exit 0
+fi
+
+echo "📝 Found Python files to format:"
+echo "$staged_py_files"
+
+# 运行 black 格式化
+echo ""
+echo "🎨 Running black..."
+if ! black --check $staged_py_files 2>&1; then
+    echo "⚠️  Code needs formatting. Auto-formatting..."
+    black $staged_py_files
+    # 重新暂存格式化后的文件
+    echo "$staged_py_files" | xargs git add
+    echo "✅ Files formatted with black"
+fi
+
+# 运行 isort 整理导入
+echo ""
+echo "📦 Running isort..."
+if ! isort --check $staged_py_files 2>&1; then
+    echo "⚠️  Imports need sorting. Auto-sorting..."
+    isort $staged_py_files
+    # 重新暂存排序后的文件
+    echo "$staged_py_files" | xargs git add
+    echo "✅ Imports sorted with isort"
+fi
+
+# 运行 ruff 检查代码质量
+echo ""
+echo "🔎 Running ruff..."
+if ! ruff check $staged_py_files; then
+    echo "❌ Ruff found issues. Please fix them before committing."
+    echo "💡 Tip: Run 'ruff check --fix' to auto-fix some issues"
+    exit 1
+fi
+
+echo ""
+echo "✅ All checks passed! Ready to commit."
+exit 0
