@@ -1,9 +1,11 @@
 # src/layout.py
-from PIL import Image, ImageDraw
 import datetime
+
+from PIL import Image, ImageDraw
+
 from .config import Config
-from .renderer import Renderer
 from .holiday import HolidayManager
+from .renderer import Renderer
 
 
 class DashboardLayout:
@@ -35,10 +37,10 @@ class DashboardLayout:
 
         # 列表显示最大行数
         self.MAX_LIST_LINES = 5
-        
+
         # 天气图标配置
         self.WEATHER_ICON_OFFSET_X = -35  # 图标相对中心点的X偏移
-        self.WEATHER_ICON_SIZE = 30       # 图标尺寸
+        self.WEATHER_ICON_SIZE = 30  # 图标尺寸
 
     def create_image(self, width, height, data):
         """
@@ -53,12 +55,7 @@ class DashboardLayout:
         holiday = self.holiday_manager.get_holiday()
         if holiday:
             self.renderer.draw_full_screen_message(
-                draw, 
-                width, 
-                height, 
-                holiday["title"], 
-                holiday["message"], 
-                holiday.get("icon")
+                draw, width, height, holiday["title"], holiday["message"], holiday.get("icon")
             )
             return image
 
@@ -82,7 +79,6 @@ class DashboardLayout:
         self._draw_footer(draw, width, commits, vps_data, btc_data, week_prog, douban)
 
         return image
-
 
     def _draw_header(self, draw, width, now, weather):
         """
@@ -140,7 +136,7 @@ class DashboardLayout:
                 # 根据天气状态选择图标
                 icon_x = center_x + self.WEATHER_ICON_OFFSET_X
                 icon_size = self.WEATHER_ICON_SIZE
-                
+
                 match w_main:
                     case _ if "Clear" in w_main or "Sun" in w_main:
                         r.draw_icon_sun(draw, icon_x, icon_y, size=icon_size)
@@ -248,16 +244,12 @@ class DashboardLayout:
         # 处理数据：行数截断
         safe_goals = self._limit_list_items(Config.LIST_GOALS, self.MAX_LIST_LINES)
         safe_must = self._limit_list_items(Config.LIST_MUST, self.MAX_LIST_LINES)
-        safe_optional = self._limit_list_items(
-            Config.LIST_OPTIONAL, self.MAX_LIST_LINES
-        )
+        safe_optional = self._limit_list_items(Config.LIST_OPTIONAL, self.MAX_LIST_LINES)
 
         # 绘制内容循环
         for i, text in enumerate(safe_goals):
             y = self.LIST_START_Y + i * self.LINE_H
-            r.draw_truncated_text(
-                draw, self.COLS[0]["x"], y, text, r.font_s, self.COLS[0]["max_w"]
-            )
+            r.draw_truncated_text(draw, self.COLS[0]["x"], y, text, r.font_s, self.COLS[0]["max_w"])
 
         for i, text in enumerate(safe_must):
             y = self.LIST_START_Y + i * self.LINE_H
@@ -291,7 +283,6 @@ class DashboardLayout:
             width=2,
         )
 
-
     def _draw_footer(self, draw, width, commits, vps_data, btc_data, week_prog, douban):
         """
         绘制底部区域：支持动态 Slot 分布
@@ -320,11 +311,13 @@ class DashboardLayout:
 
         # 如果有豆瓣数据，显示豆瓣；否则显示 VPS
         if Config.DOUBAN_ID and (douban["book"] > 0 or douban["movie"] > 0):
-             # 简单显示书/影
-             douban_val = f"B:{douban['book']} M:{douban['movie']}"
-             footer_items.append({"label": "Douban (Year)", "value": douban_val, "type": "text_small"})
+            # 简单显示书/影
+            douban_val = f"B:{douban['book']} M:{douban['movie']}"
+            footer_items.append(
+                {"label": "Douban (Year)", "value": douban_val, "type": "text_small"}
+            )
         else:
-             footer_items.append({"label": "VPS Data", "value": vps_data, "type": "ring"})
+            footer_items.append({"label": "VPS Data", "value": vps_data, "type": "ring"})
 
         # 计算动态布局
         content_width = width - 40
@@ -366,12 +359,12 @@ class DashboardLayout:
                     align_y_center=True,
                 )
             elif item["type"] == "text_small":
-                 r.draw_centered_text(
+                r.draw_centered_text(
                     draw,
                     center_x,
                     self.FOOTER_CENTER_Y,
                     str(item["value"]),
-                    font=r.font_m, # 使用中号字体
+                    font=r.font_m,  # 使用中号字体
                     align_y_center=True,
                 )
             else:
@@ -391,24 +384,44 @@ class DashboardLayout:
         """
         r = self.renderer
         year = datetime.datetime.now().year
-        
+
         # 标题
-        r.draw_centered_text(draw, width // 2, 50, f"{year} Year in Review", font=r.font_l, align_y_center=False)
-        
+        r.draw_centered_text(
+            draw, width // 2, 50, f"{year} Year in Review", font=r.font_l, align_y_center=False
+        )
+
         # 核心数据
         center_y = height // 2
-        
+
         # Total Commits
-        r.draw_centered_text(draw, width // 2, center_y - 60, str(summary['total']), font=r.font_xl, align_y_center=True)
-        r.draw_centered_text(draw, width // 2, center_y, "Total Contributions", font=r.font_m, align_y_center=True)
-        
+        r.draw_centered_text(
+            draw,
+            width // 2,
+            center_y - 60,
+            str(summary["total"]),
+            font=r.font_xl,
+            align_y_center=True,
+        )
+        r.draw_centered_text(
+            draw, width // 2, center_y, "Total Contributions", font=r.font_m, align_y_center=True
+        )
+
         # 详细数据 (Max / Avg)
         detail_y = center_y + 80
         detail_text = f"Max Day: {summary['max']}   |   Daily Avg: {summary['avg']}"
-        r.draw_centered_text(draw, width // 2, detail_y, detail_text, font=r.font_s, align_y_center=True)
-        
+        r.draw_centered_text(
+            draw, width // 2, detail_y, detail_text, font=r.font_s, align_y_center=True
+        )
+
         # 底部祝福
-        r.draw_centered_text(draw, width // 2, height - 40, "See you in next year!", font=r.font_s, align_y_center=True)
+        r.draw_centered_text(
+            draw,
+            width // 2,
+            height - 40,
+            "See you in next year!",
+            font=r.font_s,
+            align_y_center=True,
+        )
 
     def _limit_list_items(self, src_list, max_lines):
         """

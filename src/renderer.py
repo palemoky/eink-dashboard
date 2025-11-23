@@ -1,5 +1,7 @@
-from PIL import ImageDraw, ImageFont
 import math
+
+from PIL import ImageFont
+
 from .config import Config
 
 
@@ -21,9 +23,7 @@ class Renderer:
         except IOError:
             self.font_s = self.font_m = self.font_l = self.font_xl = ImageFont.load_default()
             # Fallback mapping
-            self.font_xs = self.font_time = self.font_date_big = (
-                self.font_date_small
-            ) = self.font_s
+            self.font_xs = self.font_time = self.font_date_big = self.font_date_small = self.font_s
 
     def draw_centered_text(self, draw, x, y, text, font, fill=0, align_y_center=True):
         try:
@@ -71,9 +71,7 @@ class Renderer:
             draw.pieslice(bbox, start=start_angle, end=end_angle, fill=0)
 
         inner_r = radius - thickness
-        draw.ellipse(
-            (x - inner_r, y - inner_r, x + inner_r, y + inner_r), fill=255, outline=0
-        )
+        draw.ellipse((x - inner_r, y - inner_r, x + inner_r, y + inner_r), fill=255, outline=0)
 
     # --- Icons (Scaled) ---
 
@@ -153,89 +151,86 @@ class Renderer:
         s = size / 40.0
         y_base = y + (15 * s)
         r_snow = 2 * s
-        
+
         draw.ellipse(
-            (x - 12 * s, y_base + 5 * s, x - 12 * s + r_snow * 2, y_base + 5 * s + r_snow * 2), 
-            fill=0
-        ) 
+            (x - 12 * s, y_base + 5 * s, x - 12 * s + r_snow * 2, y_base + 5 * s + r_snow * 2),
+            fill=0,
+        )
         draw.ellipse(
-            (x - 2 * s, y_base + 8 * s, x - 2 * s + r_snow * 2, y_base + 8 * s + r_snow * 2), 
-            fill=0
-        ) 
+            (x - 2 * s, y_base + 8 * s, x - 2 * s + r_snow * 2, y_base + 8 * s + r_snow * 2), fill=0
+        )
         draw.ellipse(
-            (x + 8 * s, y_base + 5 * s, x + 8 * s + r_snow * 2, y_base + 5 * s + r_snow * 2), 
-            fill=0
+            (x + 8 * s, y_base + 5 * s, x + 8 * s + r_snow * 2, y_base + 5 * s + r_snow * 2), fill=0
         )
 
     def draw_icon_thunder(self, draw, x, y, size=20):
         self.draw_icon_cloud(draw, x, y, size)
         s = size / 40.0
         y_base = y + (10 * s)
-        
-        points = [
-            (x + 2 * s, y_base),  
-            (x - 5 * s, y_base + 10 * s),  
-            (x, y_base + 10 * s),  
-            (x - 3 * s, y_base + 20 * s),  
-            (x - 3 * s, y_base + 20 * s), # End point
-        ]
+
         # Draw lightning bolt manually with lines
+
         draw.line((x + 2 * s, y_base, x - 5 * s, y_base + 10 * s), fill=0, width=max(1, int(2 * s)))
-        draw.line((x - 5 * s, y_base + 10 * s, x, y_base + 10 * s), fill=0, width=max(1, int(2 * s)))
-        draw.line((x, y_base + 10 * s, x - 3 * s, y_base + 20 * s), fill=0, width=max(1, int(2 * s)))
+        draw.line(
+            (x - 5 * s, y_base + 10 * s, x, y_base + 10 * s), fill=0, width=max(1, int(2 * s))
+        )
+        draw.line(
+            (x, y_base + 10 * s, x - 3 * s, y_base + 20 * s), fill=0, width=max(1, int(2 * s))
+        )
 
     # --- Holiday Icons ---
 
     def draw_icon_cake(self, draw, x, y, size=60):
         s = size / 60.0
         # Base
-        draw.rectangle((x - 20*s, y + 10*s, x + 20*s, y + 30*s), outline=0, width=int(2*s))
+        draw.rectangle(
+            (x - 20 * s, y + 10 * s, x + 20 * s, y + 30 * s), outline=0, width=int(2 * s)
+        )
         # Top layer
-        draw.rectangle((x - 15*s, y - 5*s, x + 15*s, y + 10*s), outline=0, width=int(2*s))
+        draw.rectangle((x - 15 * s, y - 5 * s, x + 15 * s, y + 10 * s), outline=0, width=int(2 * s))
         # Candle
-        draw.line((x, y - 5*s, x, y - 15*s), fill=0, width=int(2*s))
+        draw.line((x, y - 5 * s, x, y - 15 * s), fill=0, width=int(2 * s))
         # Flame
-        draw.ellipse((x - 2*s, y - 22*s, x + 2*s, y - 15*s), fill=0)
+        draw.ellipse((x - 2 * s, y - 22 * s, x + 2 * s, y - 15 * s), fill=0)
 
     def draw_icon_heart(self, draw, x, y, size=60):
         s = size / 60.0
         # Simple heart shape using two circles and a triangle approximation
-        r = 10 * s
-        draw.ellipse((x - 20*s, y - 10*s, x, y + 10*s), fill=0)
-        draw.ellipse((x, y - 10*s, x + 20*s, y + 10*s), fill=0)
+        draw.ellipse((x - 20 * s, y - 10 * s, x, y + 10 * s), fill=0)
+        draw.ellipse((x, y - 10 * s, x + 20 * s, y + 10 * s), fill=0)
         # Triangle bottom
-        draw.polygon([(x - 18*s, y + 5*s), (x + 18*s, y + 5*s), (x, y + 25*s)], fill=0)
+        draw.polygon([(x - 18 * s, y + 5 * s), (x + 18 * s, y + 5 * s), (x, y + 25 * s)], fill=0)
 
     def draw_icon_lantern(self, draw, x, y, size=60):
         s = size / 60.0
         # Main body
-        draw.ellipse((x - 15*s, y - 20*s, x + 15*s, y + 20*s), outline=0, width=int(2*s))
+        draw.ellipse((x - 15 * s, y - 20 * s, x + 15 * s, y + 20 * s), outline=0, width=int(2 * s))
         # Top/Bottom caps
-        draw.rectangle((x - 8*s, y - 22*s, x + 8*s, y - 18*s), fill=0)
-        draw.rectangle((x - 8*s, y + 18*s, x + 8*s, y + 22*s), fill=0)
+        draw.rectangle((x - 8 * s, y - 22 * s, x + 8 * s, y - 18 * s), fill=0)
+        draw.rectangle((x - 8 * s, y + 18 * s, x + 8 * s, y + 22 * s), fill=0)
         # Tassel
-        draw.line((x, y + 22*s, x, y + 35*s), fill=0, width=int(2*s))
+        draw.line((x, y + 22 * s, x, y + 35 * s), fill=0, width=int(2 * s))
 
     def draw_icon_star(self, draw, x, y, size=60):
         s = size / 60.0
         # 5-pointed star
         points = []
         for i in range(5):
-            angle = math.radians(i * 72 - 18) # Start at top
-            points.append((x + math.cos(angle) * 25*s, y + math.sin(angle) * 25*s))
+            angle = math.radians(i * 72 - 18)  # Start at top
+            points.append((x + math.cos(angle) * 25 * s, y + math.sin(angle) * 25 * s))
             angle_inner = math.radians(i * 72 + 18)
-            points.append((x + math.cos(angle_inner) * 10*s, y + math.sin(angle_inner) * 10*s))
+            points.append((x + math.cos(angle_inner) * 10 * s, y + math.sin(angle_inner) * 10 * s))
         draw.polygon(points, outline=0)
 
     def draw_full_screen_message(self, draw, width, height, title, message, icon_type=None):
         """绘制全屏消息（用于节日祝福）"""
         center_x = width // 2
         center_y = height // 2
-        
+
         # 绘制边框
-        draw.rectangle((10, 10, width-10, height-10), outline=0, width=4)
-        draw.rectangle((16, 16, width-16, height-16), outline=0, width=2)
-        
+        draw.rectangle((10, 10, width - 10, height - 10), outline=0, width=4)
+        draw.rectangle((16, 16, width - 16, height - 16), outline=0, width=2)
+
         # 绘制图标 (如果有)
         if icon_type:
             icon_y = center_y - 50
@@ -248,9 +243,9 @@ class Renderer:
                     self.draw_icon_lantern(draw, center_x, icon_y, size=80)
                 case _:
                     self.draw_icon_star(draw, center_x, icon_y, size=80)
-        
+
         # 绘制标题
         self.draw_centered_text(draw, center_x, center_y + 30, title, self.font_l)
-        
+
         # 绘制消息
         self.draw_centered_text(draw, center_x, center_y + 80, message, self.font_m)

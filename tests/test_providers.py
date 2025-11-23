@@ -1,8 +1,11 @@
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
-from src.providers import get_weather, get_github_commits
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import httpx
+import pytest
 import tenacity
+
+from src.providers import get_github_commits, get_weather
+
 
 @pytest.mark.asyncio
 async def test_get_weather_success():
@@ -34,7 +37,9 @@ async def test_get_github_commits_fail():
     mock_client = AsyncMock(spec=httpx.AsyncClient)
     mock_client.post.side_effect = httpx.RequestError("Network Down", request=MagicMock())
 
-    with patch("src.config.Config.GITHUB_USERNAME", "testuser"), \
-         patch("src.config.Config.GITHUB_TOKEN", "fake_token"):
+    with (
+        patch("src.config.Config.GITHUB_USERNAME", "testuser"),
+        patch("src.config.Config.GITHUB_TOKEN", "fake_token"),
+    ):
         with pytest.raises(tenacity.RetryError):
             await get_github_commits(mock_client)

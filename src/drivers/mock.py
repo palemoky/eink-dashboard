@@ -1,7 +1,9 @@
 import logging
+
 from PIL import Image
 
 logger = logging.getLogger(__name__)
+
 
 class MockEPDDriver:
     def __init__(self, width: int = 800, height: int = 480):

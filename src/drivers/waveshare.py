@@ -1,9 +1,10 @@
-import logging
 import importlib
+import logging
+
 from PIL import Image
-from .base import EPDDriver
 
 logger = logging.getLogger(__name__)
+
 
 class WaveshareEPDDriver:
     def __init__(self, model_name: str):
@@ -15,18 +16,20 @@ class WaveshareEPDDriver:
             # 动态导入 src.lib.waveshare_epd.{model_name}
             module_path = f"src.lib.waveshare_epd.{model_name}"
             self.epd_module = importlib.import_module(module_path)
-            
+
             # 实例化 EPD 类
             self.epd = self.epd_module.EPD()
             self.width = self.epd.width
             self.height = self.epd.height
             logger.info(f"Loaded Waveshare driver: {model_name} ({self.width}x{self.height})")
-            
+
         except ImportError as e:
             logger.error(f"Failed to load Waveshare driver '{model_name}': {e}")
             raise
         except AttributeError as e:
-            logger.error(f"Driver '{model_name}' does not have expected EPD class or attributes: {e}")
+            logger.error(
+                f"Driver '{model_name}' does not have expected EPD class or attributes: {e}"
+            )
             raise
 
     def init(self) -> None:

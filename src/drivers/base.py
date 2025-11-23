@@ -1,5 +1,7 @@
 from typing import Protocol, runtime_checkable
+
 from PIL import Image
+
 
 @runtime_checkable
 class EPDDriver(Protocol):

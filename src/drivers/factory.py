@@ -1,15 +1,17 @@
-import os
 import logging
+import os
+
 from .base import EPDDriver
 from .mock import MockEPDDriver
 from .waveshare import WaveshareEPDDriver
 
 logger = logging.getLogger(__name__)
 
+
 def get_driver() -> EPDDriver:
     """
     根据环境变量获取 EPD 驱动实例
-    
+
     环境变量:
     - MOCK_EPD: 如果为 "true"，强制使用 Mock 驱动
     - EPD_MODEL: Waveshare 驱动型号，默认为 "epd7in5_V2"
