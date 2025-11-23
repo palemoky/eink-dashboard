@@ -118,7 +118,7 @@ class DashboardLayout:
 
         # 统一的第一行基线 Y 坐标
         line1_y = top_y
-        line2_y = top_y + 50  # 第二行统一偏移
+        line2_y = top_y + 35  # 第二行统一偏移
 
         match item_type:
             case "weather":
@@ -144,16 +144,16 @@ class DashboardLayout:
 
                 match w_main:
                     case _ if "Clear" in w_main or "Sun" in w_main:
-                        r.draw_icon_sun(draw, icon_x, icon_y - 15, size=icon_size)
+                        r.draw_icon_sun(draw, icon_x, icon_y, size=icon_size)
                     case _ if "Rain" in w_main or "Drizzle" in w_main:
-                        r.draw_icon_rain(draw, icon_x, icon_y - 15, size=icon_size)
+                        r.draw_icon_rain(draw, icon_x, icon_y, size=icon_size)
                     case _ if "Snow" in w_main:
-                        r.draw_icon_snow(draw, icon_x, icon_y - 15, size=icon_size)
+                        r.draw_icon_snow(draw, icon_x, icon_y, size=icon_size)
                     case _ if "Thunder" in w_main:
-                        r.draw_icon_thunder(draw, icon_x, icon_y - 15, size=icon_size)
+                        r.draw_icon_thunder(draw, icon_x, icon_y, size=icon_size)
                     case _:
                         # 默认 clouds
-                        r.draw_icon_cloud(draw, icon_x, icon_y - 15, size=icon_size)
+                        r.draw_icon_cloud(draw, icon_x, icon_y, size=icon_size)
 
                 desc = data["desc"]
                 if desc == "Clouds":
@@ -161,19 +161,7 @@ class DashboardLayout:
                 if desc == "Thunderstorm":
                     desc = "Storm"
 
-                # 使用 draw.text 并居中对齐
-                try:
-                    bbox = draw.textbbox((0, 0), desc, font=r.font_s)
-                    text_h = bbox[3] - bbox[1]
-                except AttributeError:
-                    _, text_h = draw.textsize(desc, font=r.font_s)
-
-                draw.text(
-                    (center_x + 5, icon_y - text_h // 2 - 3),
-                    desc,
-                    font=r.font_s,
-                    fill=0,
-                )
+                draw.text((center_x, icon_y - 12), desc, font=r.font_s, fill=0)
 
             case "date":
                 data = item_data["data"]
@@ -198,11 +186,20 @@ class DashboardLayout:
 
             case "time":
                 data = item_data["data"]
-                # 第一行：时间（与其他组件对齐）
+                # 第一行：Updated 标签（与其他组件对齐）
                 r.draw_centered_text(
                     draw,
                     center_x,
                     line1_y,
+                    "Updated",
+                    font=r.font_s,
+                    align_y_center=False,
+                )
+                # 第二行：时间（与其他组件第二行对齐）
+                r.draw_centered_text(
+                    draw,
+                    center_x,
+                    line2_y,
                     data.strftime("%H:%M"),
                     font=r.font_time,
                     align_y_center=False,
