@@ -34,6 +34,9 @@ ENV/
 *.log
 logs/
 
+# Data files
+data/
+
 # Testing
 .pytest_cache/
 .coverage
@@ -49,4 +52,3 @@ htmlcov/
 *.png
 *.jpg
 *.jpeg
-data/

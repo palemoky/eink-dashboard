@@ -57,8 +57,8 @@ COPY --from=builder /install /usr/local
 COPY . .
 
 # 从 Downloader 阶段复制官方驱动到 src/lib/waveshare_epd
-# 注意：不覆盖 epdconfig.py，使用我们修改过的版本（包含 Docker 兼容性修复）
-# COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/lib/waveshare_epd/epdconfig.py src/lib/waveshare_epd/
+# 使用官方原版驱动（如果 docker-compose.yml 配置正确，应该能直接工作）
+COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/lib/waveshare_epd/epdconfig.py src/lib/waveshare_epd/
 COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/lib/waveshare_epd/epd7in5_V2.py src/lib/waveshare_epd/
 COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/lib/waveshare_epd/__init__.py src/lib/waveshare_epd/
 
