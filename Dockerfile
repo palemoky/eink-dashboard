@@ -7,7 +7,7 @@ WORKDIR /tmp
 RUN git clone --depth 1 https://github.com/waveshareteam/e-Paper.git
 
 # Stage 1: Builder
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 WORKDIR /app
 
@@ -31,7 +31,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --prefix=/install --prefer-binary --no-compile -r requirements.txt
 
 # Stage 2: Runtime
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
