@@ -116,10 +116,6 @@ class DashboardLayout:
         r = self.renderer
         item_type = item_data["type"]
 
-        # 统一的第一行基线 Y 坐标
-        line1_y = top_y
-        line2_y = top_y + 35  # 第二行统一偏移
-
         match item_type:
             case "weather":
                 data = item_data["data"]
@@ -127,20 +123,20 @@ class DashboardLayout:
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    line1_y,
+                    top_y,
                     f"{Config.CITY_NAME} {data['temp']}°",
                     font=r.font_m,
                     align_y_center=False,
                 )
 
                 # 第二行：图标 + 描述（与其他组件第二行对齐）
-                icon_y = line2_y
+                icon_y = top_y + 55
                 w_main = data["icon"]  # OpenWeatherMap main status
 
                 # 根据天气状态选择图标
-                # 图标在左(-35)，文字在右(+5)
-                icon_x = center_x - 35
-                icon_size = 30
+                icon_x = center_x + self.WEATHER_ICON_OFFSET_X
+
+                icon_size = self.WEATHER_ICON_SIZE
 
                 match w_main:
                     case _ if "Clear" in w_main or "Sun" in w_main:
@@ -169,7 +165,7 @@ class DashboardLayout:
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    line1_y,
+                    top_y + 5,
                     data.strftime("%a, %d"),
                     font=r.font_date_big,
                     align_y_center=False,
@@ -178,7 +174,7 @@ class DashboardLayout:
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    line2_y,
+                    top_y + 50,
                     data.strftime("%b %Y"),
                     font=r.font_date_small,
                     align_y_center=False,
@@ -190,7 +186,7 @@ class DashboardLayout:
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    line1_y,
+                    top_y,
                     "Updated",
                     font=r.font_s,
                     align_y_center=False,
@@ -199,7 +195,7 @@ class DashboardLayout:
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    line2_y,
+                    top_y + 35,
                     data.strftime("%H:%M"),
                     font=r.font_time,
                     align_y_center=False,
@@ -210,7 +206,7 @@ class DashboardLayout:
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    line1_y,
+                    top_y,
                     Config.GREETING_LABEL,
                     font=r.font_s,
                     align_y_center=False,
@@ -219,7 +215,7 @@ class DashboardLayout:
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    line2_y,
+                    top_y + 35,
                     Config.GREETING_TEXT,
                     font=r.font_time,
                     align_y_center=False,
@@ -230,7 +226,7 @@ class DashboardLayout:
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    line1_y,
+                    top_y,
                     item_data["label"],
                     font=r.font_s,
                     align_y_center=False,
@@ -239,7 +235,7 @@ class DashboardLayout:
                 r.draw_centered_text(
                     draw,
                     center_x,
-                    line2_y,
+                    top_y + 35,
                     item_data["value"],
                     font=r.font_time,
                     align_y_center=False,
