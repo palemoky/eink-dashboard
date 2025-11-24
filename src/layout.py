@@ -80,6 +80,11 @@ class DashboardLayout:
             self._draw_year_end_summary(draw, width, height, data["github_year_summary"])
             return image
 
+        # Check for quote display mode
+        if Config.QUOTE_ENABLED and data.get("quote"):
+            self._draw_quote_screen(draw, width, height, data["quote"])
+            return image
+
         # Extract data
         now = datetime.datetime.now()
         weather = data.get("weather", {})
@@ -506,6 +511,68 @@ class DashboardLayout:
             "See you in next year!",
             font=r.font_s,
             align_y_center=True,
+        )
+
+    def _draw_quote_screen(self, draw, width, height, quote):
+        """Draw full-screen quote display.
+
+        Args:
+            draw: PIL ImageDraw object
+            width: Canvas width
+            height: Canvas height
+            quote: Quote dictionary with content, author, source, type
+        """
+        r = self.renderer
+
+        # Quote type indicator (top right corner)
+        type_labels = {
+            "poetry": "诗词",
+            "quote": "Quote",
+            "movie": "Movie",
+        }
+        type_label = type_labels.get(quote["type"], "Quote")
+        r.draw_text(
+            draw,
+            width - 80,
+            20,
+            type_label,
+            font=r.font_s,
+            fill=0,
+        )
+
+        # Main quote content (centered)
+        content = quote["content"]
+        lines = content.split("\n")
+
+        # Calculate vertical centering
+        line_height = 50
+        total_height = len(lines) * line_height
+        start_y = (height - total_height) // 2 - 40
+
+        # Draw each line
+        for i, line in enumerate(lines):
+            y = start_y + i * line_height
+            r.draw_centered_text(
+                draw,
+                width // 2,
+                y,
+                line,
+                font=r.font_l,
+                align_y_center=False,
+            )
+
+        # Author and source (bottom)
+        attribution = f"—— {quote['author']}"
+        if quote["source"]:
+            attribution += f"《{quote['source']}》"
+
+        r.draw_centered_text(
+            draw,
+            width // 2,
+            height - 80,
+            attribution,
+            font=r.font_m,
+            align_y_center=False,
         )
 
     def _limit_list_items(self, src_list, max_lines):

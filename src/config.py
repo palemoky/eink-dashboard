@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     GREETING_LABEL: str = "Palemoky"
     GREETING_TEXT: str = "Stay Focused"
 
+    # Quote display configuration
+    QUOTE_ENABLED: bool = True  # Enable quote display mode
+    QUOTE_CACHE_HOURS: int = 1  # Cache duration in hours (default: 1 hour)
+
     # GitHub 配置
     GITHUB_USERNAME: str = ""
     GITHUB_TOKEN: str = ""

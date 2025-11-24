@@ -78,16 +78,27 @@ class DataManager:
             # 检查是否年终
             is_year_end, github_year_summary = await providers.check_year_end_summary(client)
 
-            # 获取 TODO 列表
-            from . import todo_providers
+            # Fetch TODO lists
+            from .todo_providers import get_todo_provider
 
-            try:
-                goals, must, optional = await todo_providers.get_todo_lists()
-            except Exception as e:
-                logger.error(f"Failed to fetch TODO lists: {e}")
-                goals, must, optional = todo_providers.get_todo_from_config()
+            todo_provider = get_todo_provider()
+            todo_goals = todo_provider.get_goals() if todo_provider else []
+            todo_must = todo_provider.get_must() if todo_provider else []
+            todo_optional = todo_provider.get_optional() if todo_provider else []
 
-            return {
+            # Fetch quote (if enabled)
+            quote = None
+            if Config.QUOTE_ENABLED:
+                try:
+                    from .quote_provider import get_quote
+
+                    quote = get_quote()
+                    logger.info(f"Quote fetched: {quote['type']} - {quote['author']}")
+                except Exception as e:
+                    logger.warning(f"Failed to fetch quote: {e}")
+
+            # 组装数据
+            data = {
                 "weather": weather,
                 "github_commits": commits,
                 "vps_usage": vps,
@@ -95,10 +106,16 @@ class DataManager:
                 "week_progress": week_progress,
                 "is_year_end": is_year_end,
                 "github_year_summary": github_year_summary,
-                "todo_goals": goals,
-                "todo_must": must,
-                "todo_optional": optional,
+                "todo_goals": todo_goals,
+                "todo_must": todo_must,
+                "todo_optional": todo_optional,
+                "quote": quote,
             }
+
+            # 保存缓存
+            self.save_cache(data)
+
+            return data
 
     def _get_with_cache_fallback(self, task, key, default):
         """从任务获取结果，失败时使用缓存"""

@@ -12,20 +12,18 @@ import sys
 
 import pendulum
 
-# Support both direct execution and module execution
+from .config import Config
+
+# Try relative import first (for package mode)
 try:
-    from .config import Config
     from .data_manager import DataManager
     from .drivers.factory import get_driver
-    from .holiday import HolidayManager
     from .layout import DashboardLayout
 except ImportError:
     # If relative import fails, add parent directory to path
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    from src.config import Config
     from src.data_manager import DataManager
     from src.drivers.factory import get_driver
-    from src.holiday import HolidayManager
     from src.layout import DashboardLayout
 
 # 配置日志（支持环境变量控制日志级别）
@@ -148,32 +146,19 @@ async def main():
                     image = layout.create_image(epd.width, epd.height, data)
 
                 if Config.IS_SCREENSHOT_MODE:
-                    image.save(Config.DATA_DIR / "screenshot.bmp")
-                    logger.info("Saved screenshot.bmp")
+                    # 截图模式：保存到文件
+                    image.save("screenshot.png")
+                    logger.info("Screenshot saved to screenshot.png")
+                    break
 
-                # 3. 显示到屏幕
-                # 关键优化：遵循 Init -> Display -> Sleep 流程保护屏幕
-                logger.info("Updating display...")
+                # 3. 显示图像
                 epd.init()
                 epd.display(image)
                 epd.sleep()
                 logger.info("Display updated and put to sleep.")
 
-                # 4. 检查是否是节日
-                holiday_manager = HolidayManager()
-                holiday = holiday_manager.get_holiday()
-
-                if holiday:
-                    # 如果是节日，显示祝福后等到第二天再刷新
-                    logger.info(f"🎉 Today is {holiday['name']}! Displaying greeting all day.")
-                    # 计算到明天凌晨的秒数
-                    tomorrow = now.add(days=1).start_of("day")
-                    sleep_until_tomorrow = (tomorrow - now).total_seconds()
-                    logger.info(f"Sleeping until tomorrow ({sleep_until_tomorrow:.0f}s)")
-                    await asyncio.sleep(sleep_until_tomorrow)
-                else:
-                    # 正常刷新间隔
-                    await asyncio.sleep(Config.REFRESH_INTERVAL)
+                # 正常刷新间隔
+                await asyncio.sleep(Config.REFRESH_INTERVAL)
 
         except KeyboardInterrupt:
             logger.info("Exiting...")
