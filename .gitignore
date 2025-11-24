@@ -46,9 +46,3 @@ htmlcov/
 # Environment variables
 .env
 .env.local
-
-# Project specific
-*.bmp
-*.png
-*.jpg
-*.jpeg
