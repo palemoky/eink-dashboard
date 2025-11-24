@@ -12,16 +12,16 @@ import sys
 
 import pendulum
 
-from .config import Config
-
 # Try relative import first (for package mode)
 try:
+    from .config import Config
     from .data_manager import DataManager
     from .drivers.factory import get_driver
     from .layout import DashboardLayout
 except ImportError:
     # If relative import fails, add parent directory to path
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from src.config import Config
     from src.data_manager import DataManager
     from src.drivers.factory import get_driver
     from src.layout import DashboardLayout
