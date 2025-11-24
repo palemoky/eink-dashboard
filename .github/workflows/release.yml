@@ -2,15 +2,16 @@ name: Release
 
 on:
   push:
-    tags: [ "v*.*.*" ]
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: eink-panel
   DOCKERHUB_IMAGE: palemoky/eink-panel
   GHCR_IMAGE: ghcr.io/palemoky/eink-panel
 
 jobs:
+  # Run tests before building and publishing
   test:
     runs-on: ubuntu-latest
     steps:
@@ -36,7 +37,8 @@ jobs:
         run: |
           uv run pytest tests/
 
-  build:
+  # Build and publish Docker images to Docker Hub and GHCR
+  build-and-push:
     runs-on: ubuntu-latest
     needs: test
     permissions:
@@ -47,22 +49,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 设置 QEMU 以支持多架构构建 (ARM64/ARMv7 for Raspberry Pi)
+      # Set up QEMU for multi-architecture builds (ARM64 for Raspberry Pi)
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
-      # 设置 Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 登录 Docker Hub
+      # Login to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 登录 GitHub Container Registry
+      # Login to GitHub Container Registry
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -70,7 +71,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 生成 Docker 元数据 (tags, labels)
+      # Generate Docker metadata (tags and labels)
       - name: Extract metadata for Docker Hub
         id: meta-dockerhub
         uses: docker/metadata-action@v5
@@ -93,7 +94,7 @@ jobs:
             type=semver,pattern={{major}}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
 
-      # 构建并推送到两个 registry (一次构建，推送到多个目标)
+      # Build and push to both Docker Hub and GHCR in one step
       - name: Build and push to Docker Hub and GHCR
         uses: docker/build-push-action@v5
         with:
@@ -103,31 +104,82 @@ jobs:
             ${{ steps.meta-dockerhub.outputs.tags }}
             ${{ steps.meta-ghcr.outputs.tags }}
           labels: ${{ steps.meta-dockerhub.outputs.labels }}
-          # 同时构建 AMD64 (PC) 和 ARM64 (树莓派 3/4/5 64位)
-          # 注意: 移除了 arm/v7 以加快构建速度 (如需要可以添加回来)
+          # Multi-platform build: AMD64 (PC) and ARM64 (Raspberry Pi 3/4/5 64-bit)
           platforms: linux/amd64,linux/arm64
-          cache-from: type=gha
-          # 仅在 main 分支写入缓存（减少缓存使用，PR 仍可读取）
-          cache-to: ${{ github.ref == 'refs/heads/main' && 'type=gha,mode=min' || '' }}
-          # 启用 provenance 和 sbom 以提高安全性
+          # Docker cache disabled - UV cache already speeds up dependency installation
+          # Avoids wasteful buildkit-blob-* cache files with low hit rate
           provenance: false
           sbom: false
 
+      # Clean up old alpha/beta/rc images (keep only the latest 2 versions)
+      - name: Clean up old pre-release images
+        if: contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc')
+        run: |
+          echo "Cleaning up old pre-release images..."
+          
+          # Clean up GHCR old images (keep latest 2 alpha versions)
+          gh api \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /user/packages/container/${{ github.event.repository.name }}/versions \
+            --jq '.[] | select(.metadata.container.tags[] | contains("alpha") or contains("beta") or contains("rc")) | .id' \
+            | tail -n +3 \
+            | xargs -I {} gh api \
+              --method DELETE \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              /user/packages/container/${{ github.event.repository.name }}/versions/{} \
+            || echo "No old pre-release images to clean"
+          
+          # Clean up Docker Hub old images (keep latest 2 alpha versions)
+          echo "Cleaning up Docker Hub pre-release images..."
+          
+          # Get Docker Hub token
+          HUB_TOKEN=$(curl -s -H "Content-Type: application/json" -X POST \
+            -d '{"username": "${{ secrets.DOCKERHUB_USERNAME }}", "password": "${{ secrets.DOCKERHUB_TOKEN }}"}' \
+            https://hub.docker.com/v2/users/login/ | jq -r .token)
+          
+          # Get all tags
+          REPO_NAME="${{ env.DOCKERHUB_IMAGE }}"
+          TAGS=$(curl -s -H "Authorization: JWT ${HUB_TOKEN}" \
+            "https://hub.docker.com/v2/repositories/${REPO_NAME}/tags/?page_size=100" \
+            | jq -r '.results[] | select(.name | test("alpha|beta|rc")) | .name' \
+            | sort -V)
+          
+          # Keep latest 2, delete others
+          OLD_TAGS=$(echo "$TAGS" | head -n -2)
+          
+          if [ -n "$OLD_TAGS" ]; then
+            echo "Deleting old tags: $OLD_TAGS"
+            echo "$OLD_TAGS" | while read tag; do
+              curl -X DELETE \
+                -H "Authorization: JWT ${HUB_TOKEN}" \
+                "https://hub.docker.com/v2/repositories/${REPO_NAME}/tags/${tag}/" \
+                && echo "Deleted tag: $tag" \
+                || echo "Failed to delete tag: $tag"
+            done
+          else
+            echo "No old Docker Hub tags to clean"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Notify on failure via Xiaomi Speaker
       - name: Notify via Xiaomi Speaker
         if: failure()
         env:
           MI_USER: ${{ secrets.MI_USER }}
           MI_PASS: ${{ secrets.MI_PASS }}
           MI_BOX_DID: ${{ secrets.MI_BOX_DID }}
-          NOTIFY_MSG: "警报，项目 ${{ github.repository }} 构建失败！"
+          NOTIFY_MSG: "Alert: Release failed for ${{ github.repository }}"
         run: |
           uv pip install --system aiohttp aiofiles miservice
           python .github/scripts/notify_xiaomi_speaker.py
 
-  # 同步 README 到 Docker Hub (在镜像构建成功后)
+  # Sync README to Docker Hub (after successful image build)
   sync-readme:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-and-push
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
