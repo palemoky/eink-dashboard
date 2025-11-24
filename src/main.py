@@ -1,3 +1,9 @@
+"""Main entry point for the E-Ink Panel dashboard application.
+
+Handles display initialization, data fetching, image rendering, and refresh scheduling.
+Supports quiet hours, holiday greetings, and wallpaper mode.
+"""
+
 import asyncio
 import logging
 import os
@@ -6,7 +12,7 @@ import sys
 
 import pendulum
 
-# 支持直接运行和作为模块运行
+# Support both direct execution and module execution
 try:
     from .config import Config
     from .data_manager import DataManager
@@ -14,7 +20,7 @@ try:
     from .holiday import HolidayManager
     from .layout import DashboardLayout
 except ImportError:
-    # 如果相对导入失败，添加父目录到路径并使用绝对导入
+    # If relative import fails, add parent directory to path
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from src.config import Config
     from src.data_manager import DataManager

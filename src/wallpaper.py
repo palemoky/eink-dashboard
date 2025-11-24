@@ -1,6 +1,7 @@
-"""
-壁纸管理器 - 用于显示艺术壁纸
-支持太空主题、自然风景等
+"""Artistic wallpaper generation for E-Ink display.
+
+Generates various artistic wallpapers including space themes, geometric patterns,
+and abstract designs optimized for E-Ink displays.
 """
 
 import random
@@ -11,6 +12,12 @@ from .renderer import Renderer
 
 
 class WallpaperManager:
+    """Manages wallpaper generation and selection.
+
+    Provides methods to create various artistic wallpapers programmatically
+    or load them from image files.
+    """
+
     def __init__(self):
         self.renderer = Renderer()
 

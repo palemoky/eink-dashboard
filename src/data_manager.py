@@ -1,4 +1,9 @@
 # src/data_manager.py
+"""Data manager for coordinating API calls and caching.
+
+Manages HTTP client lifecycle and coordinates concurrent data fetching
+from multiple providers with error handling and fallback values.
+"""
 import asyncio
 import json
 import logging
@@ -12,6 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 class DataManager:
+    """Manages data fetching from multiple API providers.
+
+    Handles HTTP client lifecycle, concurrent API calls, and error recovery.
+    Provides fallback values when API calls fail.
+    """
+
     def __init__(self):
         self.cache_file = Config.DATA_DIR / "cache.json"
         self.client = None

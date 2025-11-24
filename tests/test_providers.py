@@ -1,3 +1,5 @@
+"""Tests for data providers and API integrations."""
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx

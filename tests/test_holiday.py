@@ -1,3 +1,5 @@
+"""Tests for holiday detection and greeting generation."""
+
 import pendulum
 
 from src.config import Config

@@ -1,3 +1,12 @@
+"""Data providers for fetching information from various APIs.
+
+This module contains async functions to fetch data from:
+- OpenWeatherMap (weather data)
+- GitHub GraphQL API (contribution statistics)
+- CoinGecko (Bitcoin price)
+- VPS API (server usage)
+"""
+
 import logging
 
 import httpx
@@ -14,7 +23,7 @@ from .config import Config
 
 logger = logging.getLogger(__name__)
 
-# 定义通用的重试策略
+# Retry strategy for API calls: 3 attempts with 2 second wait
 retry_strategy = retry(
     stop=stop_after_attempt(3),
     wait=wait_fixed(2),
@@ -25,6 +34,17 @@ retry_strategy = retry(
 
 @retry_strategy
 async def get_weather(client: httpx.AsyncClient):
+    """Fetch current weather data from OpenWeatherMap API.
+
+    Args:
+        client: Async HTTP client instance
+
+    Returns:
+        Dictionary containing temperature, description, and icon name
+
+    Raises:
+        httpx.HTTPError: If API request fails
+    """
     if not Config.OPENWEATHER_API_KEY:
         return {"temp": "13.9", "desc": "Sunny", "icon": "Clear"}
 
@@ -49,7 +69,19 @@ async def get_weather(client: httpx.AsyncClient):
 
 @retry_strategy
 async def get_github_commits(client: httpx.AsyncClient):
-    """使用 GraphQL API 获取提交数（支持日/月/年）"""
+    """Fetch GitHub contribution count using GraphQL API.
+
+    Supports daily, monthly, or yearly statistics based on GITHUB_STATS_MODE config.
+
+    Args:
+        client: Async HTTP client instance
+
+    Returns:
+        Total contribution count (commits + issues + PRs + reviews)
+
+    Raises:
+        httpx.HTTPError: If API request fails
+    """
     if not Config.GITHUB_USERNAME or not Config.GITHUB_TOKEN:
         logger.warning("GitHub username or token not configured")
         return 0
@@ -57,9 +89,7 @@ async def get_github_commits(client: httpx.AsyncClient):
     url = "https://api.github.com/graphql"
     headers = {"Authorization": f"Bearer {Config.GITHUB_TOKEN}", "Content-Type": "application/json"}
 
-    # 计算时间范围
-    # 注意：GitHub 的贡献日历使用 UTC 时区
-    # 为了与 GitHub 个人主页的统计一致，我们也使用 UTC 的日期边界
+    # Calculate time range using UTC timezone to match GitHub's contribution calendar
     now_utc = pendulum.now("UTC")
 
     mode = Config.GITHUB_STATS_MODE.lower()
@@ -70,15 +100,15 @@ async def get_github_commits(client: httpx.AsyncClient):
         start_time = now_utc.start_of("month")
         end_time = now_utc
     else:  # default to day
-        # 使用 UTC 的今天，与 GitHub 个人主页一致
+        # Use UTC day boundaries to match GitHub's contribution page
         start_time = now_utc.start_of("day")
         end_time = now_utc
 
-    # 转换为 ISO 8601 格式用于 GitHub API
+    # Convert to ISO 8601 format for GitHub API
     start_utc_iso = start_time.to_iso8601_string()
     end_utc_iso = end_time.to_iso8601_string()
 
-    # 添加调试日志（显示本地时间以便理解）
+    # Debug logging
     now_local = pendulum.now(Config.TIMEZONE)
     logger.debug(f"GitHub stats mode: {mode}")
     logger.debug(f"Current time (local): {now_local}")
@@ -133,12 +163,16 @@ async def get_github_commits(client: httpx.AsyncClient):
 
 
 async def check_year_end_summary(client: httpx.AsyncClient):
-    """
-    检查是否是年终（12月31日），如果是则获取年度总结
-    Returns: (is_year_end: bool, summary_data: dict | None)
+    """Check if today is year-end and fetch annual summary if so.
+
+    Args:
+        client: Async HTTP client instance
+
+    Returns:
+        Tuple of (is_year_end: bool, summary_data: dict | None)
     """
     now = pendulum.now(Config.TIMEZONE)
-    # 仅在 12月31日 触发
+    # Trigger only on December 31st
     is_year_end = now.month == 12 and now.day == 31
 
     if is_year_end:
@@ -150,7 +184,17 @@ async def check_year_end_summary(client: httpx.AsyncClient):
 
 @retry_strategy
 async def get_github_year_summary(client: httpx.AsyncClient):
-    """获取年度详细数据（用于年终总结）"""
+    """Fetch detailed GitHub contribution data for the entire year.
+
+    Used for year-end summary display on December 31st.
+
+    Args:
+        client: Async HTTP client instance
+
+    Returns:
+        Dictionary with total, max, and average daily contributions,
+        or None if request fails
+    """
     if not Config.GITHUB_USERNAME or not Config.GITHUB_TOKEN:
         return None
 
@@ -161,7 +205,7 @@ async def get_github_year_summary(client: httpx.AsyncClient):
     start_of_year = now_local.start_of("year").in_timezone("UTC").to_iso8601_string()
     end_of_year = now_local.end_of("year").in_timezone("UTC").to_iso8601_string()
 
-    # 查询每天的贡献日历
+    # Query contribution calendar for each day
     query = """
     query($username: String!, $from: DateTime!, $to: DateTime!) {
       user(login: $username) {
@@ -197,7 +241,7 @@ async def get_github_year_summary(client: httpx.AsyncClient):
         )
         total = calendar.get("totalContributions", 0)
 
-        # 计算日均和最高
+        # Calculate daily average and maximum
         days = []
         for week in calendar.get("weeks", []):
             for day in week.get("contributionDays", []):
@@ -213,6 +257,14 @@ async def get_github_year_summary(client: httpx.AsyncClient):
 
 
 async def get_vps_info(client: httpx.AsyncClient):
+    """Fetch VPS data usage percentage.
+
+    Args:
+        client: Async HTTP client instance
+
+    Returns:
+        Data usage percentage (0-100), or 0 if request fails
+    """
     if not Config.VPS_API_KEY:
         return 0
 
@@ -234,6 +286,14 @@ async def get_vps_info(client: httpx.AsyncClient):
 
 @retry_strategy
 async def get_btc_data(client: httpx.AsyncClient):
+    """Fetch Bitcoin price and 24-hour change from CoinGecko API.
+
+    Args:
+        client: Async HTTP client instance
+
+    Returns:
+        Dictionary with USD price and 24h change percentage
+    """
     url = "https://api.coingecko.com/api/v3/simple/price"
     params = {"ids": "bitcoin", "vs_currencies": "usd", "include_24hr_change": "true"}
 
@@ -251,7 +311,11 @@ async def get_btc_data(client: httpx.AsyncClient):
 
 
 def get_week_progress():
-    """使用 pendulum 计算本周进度 (无需异步)"""
+    """Calculate current week progress as percentage.
+
+    Returns:
+        Progress percentage (0-100) from start of week to now
+    """
     now = pendulum.now(Config.TIMEZONE)
     start_of_week = now.start_of("week")
     end_of_week = now.end_of("week")

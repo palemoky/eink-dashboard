@@ -1,3 +1,5 @@
+"""Tests for dashboard layout and image generation."""
+
 from PIL import Image
 
 from src.config import Config

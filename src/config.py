@@ -1,12 +1,24 @@
+"""Application configuration settings.
+
+Loads configuration from environment variables and .env file using pydantic-settings.
+All settings can be overridden via environment variables.
+"""
+
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# 获取项目根目录
+# Project root directory
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
+    """Application configuration with environment variable support.
+
+    Attributes are loaded from .env file and can be overridden by environment variables.
+    Required settings are validated on startup via validate_required() method.
+    """
+
     # 基础配置
     REFRESH_INTERVAL: int = 600
     IS_SCREENSHOT_MODE: bool = False  # Renamed to match usage

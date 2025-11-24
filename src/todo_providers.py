@@ -1,12 +1,7 @@
-# src/todo_providers.py
-"""
-TODO 列表数据源提供者
+"""TODO list providers for fetching tasks from various sources.
 
-支持多种数据源：
-- GitHub Gists: 简单的 Markdown 格式
-- Notion: 强大的数据库功能
-- Google Sheets: 熟悉的表格界面
-- Config: 默认配置文件
+Supports multiple TODO sources including Gist, Notion, Google Sheets,
+and local configuration. Falls back to config if external sources fail.
 """
 
 import logging

@@ -1,3 +1,9 @@
+"""Rendering utilities for drawing text, icons, and shapes.
+
+Provides the Renderer class with methods for drawing various UI elements
+including text, weather icons, holiday icons, and progress indicators.
+"""
+
 import math
 
 from PIL import ImageFont
@@ -6,6 +12,12 @@ from .config import Config
 
 
 class Renderer:
+    """Handles all drawing operations for the dashboard.
+
+    Manages fonts, text rendering, icon drawing, and shape creation.
+    Supports both file-based icons and programmatic drawing as fallback.
+    """
+
     def __init__(self):
         self._load_fonts()
 

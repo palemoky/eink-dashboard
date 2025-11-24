@@ -1,4 +1,9 @@
-# src/layout.py
+"""Dashboard layout manager for E-Ink display.
+
+This module handles the visual layout and rendering of all dashboard components
+including weather, date, time, GitHub stats, and custom widgets.
+"""
+
 import datetime
 
 from PIL import Image, ImageDraw
@@ -9,6 +14,12 @@ from .renderer import Renderer
 
 
 class DashboardLayout:
+    """Manages the layout and rendering of dashboard components.
+
+    Handles positioning, sizing, and drawing of all UI elements on the E-Ink display.
+    Supports both normal dashboard mode and special holiday greeting screens.
+    """
+
     def __init__(self):
         self.renderer = Renderer()
         self.holiday_manager = HolidayManager()

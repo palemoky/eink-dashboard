@@ -1,3 +1,9 @@
+"""Holiday detection and greeting management.
+
+Detects special dates (birthdays, anniversaries, traditional holidays)
+and provides appropriate greeting messages and icons.
+"""
+
 import pendulum
 from borax.calendars.lunardate import LunarDate
 
@@ -5,6 +11,12 @@ from .config import Config
 
 
 class HolidayManager:
+    """Manages holiday detection and greeting generation.
+
+    Supports both solar calendar (birthdays, anniversaries) and
+    lunar calendar (Chinese traditional festivals) holidays.
+    """
+
     def __init__(self):
         pass
 
