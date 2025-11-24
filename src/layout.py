@@ -130,7 +130,7 @@ class DashboardLayout:
                 )
 
                 # 第二行：图标 + 描述（与其他组件第二行对齐）
-                icon_y = top_y + 55
+                icon_y = top_y + 50
                 w_main = data["icon"]  # OpenWeatherMap main status
 
                 # 根据天气状态选择图标
