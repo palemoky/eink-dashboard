@@ -58,27 +58,32 @@ async def get_github_commits(client: httpx.AsyncClient):
     headers = {"Authorization": f"Bearer {Config.GITHUB_TOKEN}", "Content-Type": "application/json"}
 
     # 计算时间范围
-    now_local = pendulum.now(Config.TIMEZONE)
+    # 注意：GitHub 的贡献日历使用 UTC 时区
+    # 为了与 GitHub 个人主页的统计一致，我们也使用 UTC 的日期边界
+    now_utc = pendulum.now("UTC")
 
     mode = Config.GITHUB_STATS_MODE.lower()
     if mode == "year":
-        start_time = now_local.start_of("year")
-        end_time = now_local  # 使用当前时间，不是年末
+        start_time = now_utc.start_of("year")
+        end_time = now_utc
     elif mode == "month":
-        start_time = now_local.start_of("month")
-        end_time = now_local  # 使用当前时间，不是月末
+        start_time = now_utc.start_of("month")
+        end_time = now_utc
     else:  # default to day
-        start_time = now_local.start_of("day")
-        end_time = now_local  # 使用当前时间，不是一天结束
+        # 使用 UTC 的今天，与 GitHub 个人主页一致
+        start_time = now_utc.start_of("day")
+        end_time = now_utc
 
-    # 转换为 UTC 时间用于 GitHub API
-    start_utc_iso = start_time.in_timezone("UTC").to_iso8601_string()
-    end_utc_iso = end_time.in_timezone("UTC").to_iso8601_string()
+    # 转换为 ISO 8601 格式用于 GitHub API
+    start_utc_iso = start_time.to_iso8601_string()
+    end_utc_iso = end_time.to_iso8601_string()
 
-    # 添加调试日志
+    # 添加调试日志（显示本地时间以便理解）
+    now_local = pendulum.now(Config.TIMEZONE)
     logger.debug(f"GitHub stats mode: {mode}")
-    logger.debug(f"Time range (local): {start_time} to {end_time}")
-    logger.debug(f"Time range (UTC): {start_utc_iso} to {end_utc_iso}")
+    logger.debug(f"Current time (local): {now_local}")
+    logger.debug(f"Current time (UTC): {now_utc}")
+    logger.debug(f"Time range (UTC): {start_time} to {end_time}")
 
     query = """
     query($username: String!, $from: DateTime!, $to: DateTime!) {
