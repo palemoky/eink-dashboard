@@ -99,6 +99,18 @@ class Renderer:
             try:
                 # 加载图标
                 icon = Image.open(icon_path)
+
+                # 处理透明背景：先转换为 RGB（白色背景）
+                if icon.mode in ("RGBA", "LA", "P"):
+                    # 创建白色背景
+                    background = Image.new("RGB", icon.size, (255, 255, 255))
+                    # 如果有 alpha 通道，使用它来合成
+                    if icon.mode == "RGBA":
+                        background.paste(icon, mask=icon.split()[3])  # 使用 alpha 通道
+                    else:
+                        background.paste(icon)
+                    icon = background
+
                 # 转换为黑白
                 icon = icon.convert("1")
                 # 调整大小
