@@ -28,7 +28,7 @@ class Renderer:
             self.font_s = ImageFont.truetype(fp, 24)
             self.font_m = ImageFont.truetype(fp, 28)
             self.font_value = ImageFont.truetype(fp, 32)
-            self.font_date_big = ImageFont.truetype(fp, 40)
+            self.font_date_big = ImageFont.truetype(fp, 34)
             self.font_date_small = ImageFont.truetype(fp, 24)
             self.font_l = ImageFont.truetype(fp, 48)
             self.font_xl = ImageFont.truetype(fp, 60)
