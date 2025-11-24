@@ -96,7 +96,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ !contains(github.ref, 'alpha') && !contains(github.ref, 'beta') && !contains(github.ref, 'rc') }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -131,6 +131,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Wait for GHCR to sync the newly pushed images
+          echo "⏳ Waiting 30 seconds for GHCR to sync..."
+          sleep 30
+          
           chmod +x .github/scripts/cleanup-ghcr-untagged.sh
           .github/scripts/cleanup-ghcr-untagged.sh "${{ env.PACKAGE_NAME }}" "${{ env.OWNER }}"
 
