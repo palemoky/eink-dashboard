@@ -89,6 +89,43 @@ def is_in_quiet_hours():
     return False, 0
 
 
+def get_refresh_interval(display_mode: str) -> int:
+    """Get refresh interval based on display mode.
+
+    Args:
+        display_mode: Current display mode
+
+    Returns:
+        Refresh interval in seconds (0 means no refresh)
+    """
+    match display_mode:
+        case "dashboard":
+            return Config.display.refresh_interval_dashboard
+        case "quote":
+            return Config.display.refresh_interval_quote
+        case "poetry":
+            return Config.display.refresh_interval_poetry
+        case "wallpaper":
+            # If wallpaper name is specified (not random), use wallpaper interval (can be 0)
+            # If random wallpaper, use the configured interval
+            if Config.display.wallpaper_name:
+                return Config.display.refresh_interval_wallpaper
+            else:
+                # Random wallpaper should refresh, use configured interval or fallback
+                return (
+                    Config.display.refresh_interval_wallpaper
+                    if Config.display.refresh_interval_wallpaper > 0
+                    else 3600
+                )
+        case "holiday":
+            return Config.display.refresh_interval_holiday
+        case "year_end":
+            return Config.display.refresh_interval_year_end
+        case _:
+            # Fallback to hardware refresh interval for unknown modes
+            return Config.hardware.refresh_interval
+
+
 async def main():
     """主函数"""
     global _driver
@@ -101,7 +138,12 @@ async def main():
         return
 
     logger.info("Starting E-Ink Panel Dashboard...")
-    logger.info(f"Refresh interval: {Config.hardware.refresh_interval}s")
+    logger.info(f"Default refresh interval: {Config.hardware.refresh_interval}s")
+    logger.info(
+        f"Mode-specific intervals: Dashboard={Config.display.refresh_interval_dashboard}s, "
+        f"Quote={Config.display.refresh_interval_quote}s, Poetry={Config.display.refresh_interval_poetry}s, "
+        f"Wallpaper={Config.display.refresh_interval_wallpaper}s"
+    )
     logger.info(
         f"Quiet hours: {Config.hardware.quiet_start_hour}:00 - {Config.hardware.quiet_end_hour}:00"
     )
@@ -272,17 +314,29 @@ async def main():
                 epd.display(image)
                 epd.sleep()
 
+                # Get mode-specific refresh interval
+                refresh_interval = get_refresh_interval(display_mode)
+
+                # Check if refresh is disabled (0 = no refresh)
+                if refresh_interval == 0:
+                    logger.info("✅ Display updated | Auto-refresh disabled for this mode")
+                    logger.info("💤 Entering sleep mode. Waiting for config change to refresh...")
+                    # Wait indefinitely for config change
+                    await config_changed.wait()
+                    config_changed.clear()
+                    logger.info("⚡ Refresh triggered by config change")
+                    continue
+
                 # Calculate and log next refresh time
-                next_refresh = pendulum.now(Config.hardware.timezone).add(
-                    seconds=Config.hardware.refresh_interval
+                next_refresh = pendulum.now(Config.hardware.timezone).add(seconds=refresh_interval)
+                logger.info(
+                    f"✅ Display updated | Refresh interval: {refresh_interval}s | "
+                    f"Next refresh: {next_refresh.format('HH:mm:ss')}"
                 )
-                logger.info(f"✅ Display updated | Next refresh: {next_refresh.format('HH:mm:ss')}")
 
                 # Wait for either refresh interval or config change event
                 try:
-                    await asyncio.wait_for(
-                        config_changed.wait(), timeout=Config.hardware.refresh_interval
-                    )
+                    await asyncio.wait_for(config_changed.wait(), timeout=refresh_interval)
                     # Config changed, clear the event and refresh immediately
                     config_changed.clear()
                     logger.info("⚡ Immediate refresh triggered by config change")

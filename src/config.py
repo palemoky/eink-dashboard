@@ -34,6 +34,28 @@ class DisplayConfig(BaseModel):
     wallpaper_name: str = Field(default="", description="Wallpaper name (empty for random)")
     quote_cache_hours: int = Field(default=1, description="Quote cache duration in hours", ge=1)
 
+    # Refresh intervals for different modes (in seconds)
+    refresh_interval_dashboard: int = Field(
+        default=600, description="Dashboard mode refresh interval in seconds", ge=60
+    )
+    refresh_interval_quote: int = Field(
+        default=3600, description="Quote mode refresh interval in seconds", ge=60
+    )
+    refresh_interval_poetry: int = Field(
+        default=3600, description="Poetry mode refresh interval in seconds", ge=60
+    )
+    refresh_interval_wallpaper: int = Field(
+        default=0,
+        description="Wallpaper mode refresh interval in seconds (0 = no refresh for static wallpaper)",
+        ge=0,
+    )
+    refresh_interval_holiday: int = Field(
+        default=86400, description="Holiday mode refresh interval in seconds", ge=60
+    )
+    refresh_interval_year_end: int = Field(
+        default=86400, description="Year-end summary mode refresh interval in seconds", ge=60
+    )
+
     @classmethod
     def from_env(cls) -> "DisplayConfig":
         """Load configuration from environment variables."""
@@ -41,6 +63,12 @@ class DisplayConfig(BaseModel):
             mode=os.getenv("DISPLAY_MODE", "dashboard"),
             wallpaper_name=os.getenv("WALLPAPER_NAME", ""),
             quote_cache_hours=int(os.getenv("QUOTE_CACHE_HOURS", "1")),
+            refresh_interval_dashboard=int(os.getenv("REFRESH_INTERVAL_DASHBOARD", "600")),
+            refresh_interval_quote=int(os.getenv("REFRESH_INTERVAL_QUOTE", "3600")),
+            refresh_interval_poetry=int(os.getenv("REFRESH_INTERVAL_POETRY", "3600")),
+            refresh_interval_wallpaper=int(os.getenv("REFRESH_INTERVAL_WALLPAPER", "0")),
+            refresh_interval_holiday=int(os.getenv("REFRESH_INTERVAL_HOLIDAY", "86400")),
+            refresh_interval_year_end=int(os.getenv("REFRESH_INTERVAL_YEAR_END", "86400")),
         )
 
 
