@@ -11,17 +11,21 @@ A personalized, asynchronous dashboard for Waveshare E-Ink displays, built with 
 
 The easiest way to run is using Docker - it handles all dependencies and driver setup automatically.
 
-![Dashboard](./docs/screenshots/dashboard.png)
-![Quote](./docs/screenshots/quote.png)
-![Poetry](./docs/screenshots/poetry.png)
-![Wallpaper](./docs/screenshots/wallpaper.png)
-![Year-End Summary](./docs/screenshots/year_end_summary.png)
-![Birthday](./docs/screenshots/birthday.png)
-![Anniversary](./docs/screenshots/anniversary.png)
-![New Year](./docs/screenshots/new_year.png)
-![Christmas](./docs/screenshots/christmas.png)
-![Spring Festival](./docs/screenshots/spring_festival.png)
-![Moon Festival](./docs/screenshots/moon_festival.png)
+## Screenshots
+### 📊 Dashboard & Other Modes
+| Dashboard | Quote | Poetry | Wallpaper |
+|-----------|-------|--------|-----------|
+| ![Dashboard](./docs/screenshots/dashboard.png) | ![Quote](./docs/screenshots/quote.png) | ![Poetry](./docs/screenshots/poetry.png) | ![Wallpaper](./docs/screenshots/wallpaper.png) |
+
+
+### 🎉 Special Days
+| Year-End | Birthday | Anniversary |
+|----------|---------|-------------|
+| ![Year-End Summary](./docs/screenshots/year_end_summary.png) | ![Birthday](./docs/screenshots/birthday.png) | ![Anniversary](./docs/screenshots/anniversary.png) |
+
+| New Year | Christmas | Spring Festival | Moon Festival |
+|----------|----------|----------------|---------------|
+| ![New Year](./docs/screenshots/new_year.png) | ![Christmas](./docs/screenshots/christmas.png) | ![Spring Festival](./docs/screenshots/spring_festival.png) | ![Moon Festival](./docs/screenshots/moon_festival.png) |
 
 ### Pull and Run
 
