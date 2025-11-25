@@ -63,8 +63,6 @@ COPY . .
 COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/lib/waveshare_epd/epd7in5_V2.py src/lib/waveshare_epd/
 COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/lib/waveshare_epd/__init__.py src/lib/waveshare_epd/
 
-# 复制字体 (确保 resources 目录存在)
-RUN mkdir -p resources
 COPY --from=downloader /tmp/e-Paper/RaspberryPi_JetsonNano/python/pic/Font.ttc resources/
 
 # 环境变量
@@ -72,6 +70,8 @@ ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 # 显式指定 gpiozero 使用 RPi.GPIO 后端 (注意：别名必须是 rpigpio，不能是 RPi.GPIO)
 ENV GPIOZERO_PIN_FACTORY=rpigpio
+# 默认显示模式 (可通过 docker run -e DISPLAY_MODE=quote 覆盖)
+ENV DISPLAY_MODE=dashboard
 
 # 创建数据目录并声明卷
 RUN mkdir -p /app/data && chown -R root:root /app/data
