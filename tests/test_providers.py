@@ -4,7 +4,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
-import tenacity
 
 from src.providers import get_github_commits, get_weather
 
@@ -44,5 +43,6 @@ async def test_get_github_commits_fail():
         patch("src.config.Config.github.username", "testuser"),
         patch("src.config.Config.github.token", "fake_token"),
     ):
-        with pytest.raises(tenacity.RetryError):
-            await get_github_commits(mock_client)
+        # Function should return 0 on error, not raise exception
+        result = await get_github_commits(mock_client)
+        assert result == 0
