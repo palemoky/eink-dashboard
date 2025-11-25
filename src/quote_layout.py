@@ -54,12 +54,12 @@ class QuoteLayout:
         line_spacing = 20
 
         # Draw opening quotation mark
-        quote_mark_size = 60
         self.renderer.draw_text(
             draw,
-            (margin_x - 10, margin_y - 20),
+            margin_x - 10,
+            margin_y - 20,
             """,
-            font_size=quote_mark_size,
+            self.renderer.font_xl,
             anchor="lt",
         )
 
@@ -77,9 +77,10 @@ class QuoteLayout:
         for line in wrapped_lines:
             self.renderer.draw_text(
                 draw,
-                (width // 2, current_y),
+                width // 2,
+                current_y,
                 line,
-                font_size=quote_font_size,
+                self.renderer.font_l,
                 anchor="mt",  # Middle-top anchor
             )
             current_y += quote_font_size + line_spacing
@@ -87,9 +88,10 @@ class QuoteLayout:
         # Draw closing quotation mark
         self.renderer.draw_text(
             draw,
-            (width - margin_x + 10, current_y - line_spacing),
+            width - margin_x + 10,
+            current_y - line_spacing,
             """,
-            font_size=quote_mark_size,
+            self.renderer.font_xl,
             anchor="rt",
         )
 
@@ -102,9 +104,10 @@ class QuoteLayout:
 
         self.renderer.draw_text(
             draw,
-            (width - margin_x, author_y),
+            width - margin_x,
+            author_y,
             author_text,
-            font_size=author_font_size,
+            self.renderer.font_value,
             anchor="rt",
         )
 

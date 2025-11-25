@@ -74,9 +74,10 @@ class PoetryLayout:
                 # Draw character
                 self.renderer.draw_text(
                     draw,
-                    (current_x, char_y),
+                    current_x,
+                    char_y,
                     char,
-                    font_size=content_font_size,
+                    self.renderer.font_l,
                     anchor="rt",  # Right-top anchor
                 )
 
@@ -104,9 +105,10 @@ class PoetryLayout:
                 char_y = meta_start_y + i * (meta_font_size + 8)
                 self.renderer.draw_text(
                     draw,
-                    (meta_x, char_y),
+                    meta_x,
+                    char_y,
                     char,
-                    font_size=meta_font_size,
+                    self.renderer.font_value,
                     anchor="lt",
                 )
 
@@ -118,9 +120,10 @@ class PoetryLayout:
                 char_y = author_start_y + i * (meta_font_size + 8)
                 self.renderer.draw_text(
                     draw,
-                    (author_x, char_y),
+                    author_x,
+                    char_y,
                     char,
-                    font_size=meta_font_size,
+                    self.renderer.font_value,
                     anchor="lt",
                 )
 
