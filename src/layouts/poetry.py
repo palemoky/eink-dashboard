@@ -189,13 +189,16 @@ class PoetryLayout:
             seal_anchor_y = y_curr
 
         # 3. 绘制印章
-        seal_size = int((cfg["sub_title_size"] if sub_title else cfg["main_title_size"]) * 0.9)
-        if seal_size > 60:
-            seal_size = 60
-        if seal_size < 30:
-            seal_size = 30
+        seal_size = int(cfg["main_title_size"] * 0.9)  # 以主标题字号为基准
+        if seal_size < 50:
+            seal_size = 50
+        if seal_size > 70:
+            seal_size = 70
 
-        self._draw_seal(draw, author, seal_anchor_x, seal_anchor_y + 25, seal_size)
+        if title_mode == 2 and seal_size > 55:
+            seal_size = 55
+
+        self._draw_seal(draw, author, seal_anchor_x, seal_anchor_y + 50, seal_size)
 
         # ============ 绘制正文 ============
 
@@ -240,7 +243,7 @@ class PoetryLayout:
             txt = clean_name[:4]
 
         try:
-            font = ImageFont.truetype(self.seal_font_path, int(size * 0.45))
+            font = ImageFont.truetype(self.seal_font_path, int(size * 0.5))
         except Exception:
             font = self.renderer.font_s
 
@@ -263,7 +266,7 @@ class PoetryLayout:
             except Exception:
                 w, h = 20, 20
 
-            draw.text((centers[i][0] - w / 2, centers[i][1] - h / 2 - 2), char, font=font, fill=0)
+            draw.text((centers[i][0] - w / 2, centers[i][1] - h / 2 - 1), char, font=font, fill=0)
 
     def _draw_decorative_corners(self, draw: ImageDraw.Draw, width: int, height: int):
         """Draw decorative corner elements for traditional aesthetic.
