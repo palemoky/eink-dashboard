@@ -432,7 +432,6 @@ class Dashboard:
         }
 
         # Dashboard mode: fetch all required data concurrently
-        # Dashboard mode: fetch all required data concurrently
         # Use persistent client if available, otherwise create temporary one
         if self.client:
             async with asyncio.TaskGroup() as tg:
@@ -454,27 +453,25 @@ class Dashboard:
                     tasks["vps"] = tg.create_task(get_vps_info(client))
                     tasks["btc"] = tg.create_task(get_btc_data(client))
 
-            # Get results with cache fallback
-            data["weather"] = self._get_with_cache_fallback(tasks["weather"], "weather", {})
-            data["github_commits"] = self._get_with_cache_fallback(
-                tasks["github"], "github_commits", 0
-            )
-            data["vps_usage"] = self._get_with_cache_fallback(tasks["vps"], "vps_usage", 0)
-            data["btc_price"] = self._get_with_cache_fallback(tasks["btc"], "btc_price", {})
+        # Get results with cache fallback
+        data["weather"] = self._get_with_cache_fallback(tasks["weather"], "weather", {})
+        data["github_commits"] = self._get_with_cache_fallback(tasks["github"], "github_commits", 0)
+        data["vps_usage"] = self._get_with_cache_fallback(tasks["vps"], "vps_usage", 0)
+        data["btc_price"] = self._get_with_cache_fallback(tasks["btc"], "btc_price", {})
 
-            # Calculate week progress
-            data["week_progress"] = get_week_progress()
+        # Calculate week progress
+        data["week_progress"] = get_week_progress()
 
-            # Fetch TODO lists
-            from .todo import get_todo_lists
+        # Fetch TODO lists
+        from .todo import get_todo_lists
 
-            todo_goals, todo_must, todo_optional = await get_todo_lists()
-            data["todo_goals"] = todo_goals
-            data["todo_must"] = todo_must
-            data["todo_optional"] = todo_optional
+        todo_goals, todo_must, todo_optional = await get_todo_lists()
+        data["todo_goals"] = todo_goals
+        data["todo_must"] = todo_must
+        data["todo_optional"] = todo_optional
 
-            self.save_cache(data)
-            return data
+        self.save_cache(data)
+        return data
 
     def _get_with_cache_fallback(self, task, key, default):
         """从任务获取结果，失败时使用缓存"""
