@@ -53,12 +53,11 @@ class PoetryLayout:
         source = poetry.get("source", "")
 
         # Process content: handle both string and list formats
-        # Convert list to string if needed
         if isinstance(content, list):
-            content = "\n".join(content)
-
-        # Split by newlines and commas, remove punctuation
-        raw_lines = content.replace("\\n", "\n").split("\n")
+            raw_lines = content
+        else:
+            # Split by newlines for string format
+            raw_lines = content.replace("\\n", "\n").split("\n")
         lines = []
         for line in raw_lines:
             line = line.strip()
