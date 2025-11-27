@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Stage 1: Builder
-FROM python:3.13-slim AS builder
+FROM python:3.14-slim AS builder
 
 WORKDIR /app
 
@@ -29,10 +29,10 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     /install.sh && \
     rm /install.sh && \
     /root/.local/bin/uv export --frozen --no-dev --extra hardware --no-hashes --no-emit-project -o requirements.txt && \
-    /root/.local/bin/uv pip install --python /usr/local/bin/python3.13 --prefix=/install -r requirements.txt
+    /root/.local/bin/uv pip install --python /usr/local/bin/python3.14 --prefix=/install -r requirements.txt
 
 # Stage 2: Runtime
-FROM python:3.13-slim
+FROM python:3.14-slim
 
 WORKDIR /app
 
