@@ -29,6 +29,9 @@ dependencies = [
     "watchdog>=3.0.0",
 ]
 
+[project.scripts]
+eink-dashboard = "src.main:main"
+
 [project.optional-dependencies]
 # Hardware dependencies (only needed on Raspberry Pi)
 hardware = [
