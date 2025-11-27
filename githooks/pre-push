@@ -54,7 +54,7 @@ while read local_ref local_sha remote_ref remote_sha; do
 
         # 运行 pytest（并发）
         printf "${BLUE}🧪 Running pytest with parallel execution...${NC}\n"
-        if ! PYTHONPATH=. pytest -n auto tests/; then
+        if ! uv run pytest -n auto tests/; then
             printf "\n"
             printf "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}\n"
             printf "${RED}❌ ERROR: Python tests failed.${NC}\n"
