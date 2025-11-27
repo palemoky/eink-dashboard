@@ -44,9 +44,14 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     libjpeg62-turbo \
     libopenjp2-7 \
     libtiff6 \
-    libopenjp2-7 \
-    libtiff6 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# 安装 lgpio 运行时库（rpi-lgpio 依赖）
+RUN curl -LO http://archive.raspberrypi.org/debian/pool/main/l/lg-gpio/liblgpio1_0.2.2-1~rpt1_arm64.deb \
+    && curl -LO http://archive.raspberrypi.org/debian/pool/main/l/lg-gpio/liblgpio-dev_0.2.2-1~rpt1_arm64.deb \
+    && apt-get install -y ./liblgpio*.deb \
+    && rm liblgpio*.deb
 
 # 从 Builder 阶段复制安装好的包
 COPY --from=builder /install /usr/local
