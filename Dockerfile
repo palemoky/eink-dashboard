@@ -5,7 +5,7 @@ FROM python:3.14-slim AS builder
 
 WORKDIR /app
 
-# 安装构建依赖 (如果需要编译 C 扩展，如 Pillow, RPi.GPIO)
+# 安装构建依赖 (如果需要编译 C 扩展，如 Pillow, rpi-lgpio)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y \
@@ -54,8 +54,8 @@ COPY . .
 # 环境变量
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
-# 显式指定 gpiozero 使用 RPi.GPIO 后端 (注意：别名必须是 rpigpio，不能是 RPi.GPIO)
-ENV GPIOZERO_PIN_FACTORY=rpigpio
+# 显式指定 gpiozero 使用 lgpio 后端 (rpi-lgpio 提供)
+ENV GPIOZERO_PIN_FACTORY=lgpio
 # 默认显示模式 (可通过 docker run -e DISPLAY_MODE=quote 覆盖)
 ENV DISPLAY_MODE=dashboard
 
@@ -63,5 +63,5 @@ ENV DISPLAY_MODE=dashboard
 RUN mkdir -p /app/data && chown -R root:root /app/data
 VOLUME /app/data
 
-# 启动命令
-CMD ["python", "src/main.py"]
+# 启动命令 (使用入口点)
+CMD ["eink-dashboard"]
