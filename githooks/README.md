@@ -13,11 +13,10 @@ git config core.hooksPath githooks
 
 在每次提交前自动运行以下检查：
 
-1. **Black** - 代码格式化
-2. **isort** - 导入语句排序
-3. **Ruff** - 代码质量检查
+1. **Ruff Format** - 代码格式化（替代 Black）
+2. **Ruff Check** - 代码质量检查和导入排序（替代 isort）
 
-如果格式化工具发现问题，会自动修复并重新暂存文件。如果 ruff 发现问题，会阻止提交并提示修复。
+如果格式化工具发现问题，会自动修复并重新暂存文件。如果 ruff 发现无法自动修复的问题，会阻止提交并提示修复。
 
 ## Pre-push Hook
 
@@ -39,11 +38,13 @@ git push --no-verify    # 跳过 pre-push
 
 ```bash
 # 格式化所有代码
-black src/ tests/
-isort src/ tests/
+ruff format src/ tests/
 
-# 检查代码质量
+# 检查代码质量（包括导入排序）
 ruff check src/ tests/
+
+# 自动修复可修复的问题
+ruff check --fix src/ tests/
 
 # 运行测试
 PYTHONPATH=. pytest tests/

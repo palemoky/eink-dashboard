@@ -35,8 +35,7 @@ jobs:
 
       - name: Code quality checks
         run: |
-          uv run black --check src/ tests/
-          uv run isort --check src/ tests/
+          uv run ruff format --check src/ tests/
           uv run ruff check src/ tests/
 
       - name: Notify via Xiaomi Speaker

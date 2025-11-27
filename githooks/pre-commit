@@ -19,36 +19,28 @@ fi
 printf "📝 Found Python files to format:\n"
 printf "%s\n" "$staged_py_files"
 
-# 运行 black 格式化
+# 运行 ruff format（替代 black）
 printf "\n"
-printf "🎨 Running black...\n"
-if ! black --check $staged_py_files 2>&1; then
+printf "🎨 Running ruff format...\n"
+if ! uv run ruff format --check $staged_py_files 2>&1; then
     printf "⚠️  Code needs formatting. Auto-formatting...\n"
-    black $staged_py_files
+    uv run ruff format $staged_py_files
     # 重新暂存格式化后的文件
     echo "$staged_py_files" | xargs git add
-    printf "✅ Files formatted with black\n"
+    printf "✅ Files formatted with ruff\n"
 fi
 
-# 运行 isort 整理导入
+# 运行 ruff 检查代码质量（包括导入排序）
 printf "\n"
-printf "📦 Running isort...\n"
-if ! isort --check $staged_py_files 2>&1; then
-    printf "⚠️  Imports need sorting. Auto-sorting...\n"
-    isort $staged_py_files
-    # 重新暂存排序后的文件
-    echo "$staged_py_files" | xargs git add
-    printf "✅ Imports sorted with isort\n"
-fi
-
-# 运行 ruff 检查代码质量
-printf "\n"
-printf "🔎 Running ruff...\n"
-if ! ruff check $staged_py_files; then
-    printf "❌ Ruff found issues. Please fix them before committing.\n"
-    printf "💡 Tip: Run 'ruff check --fix' to auto-fix some issues\n"
+printf "🔎 Running ruff check...\n"
+if ! uv run ruff check --fix $staged_py_files; then
+    printf "❌ Ruff found issues that couldn't be auto-fixed.\n"
+    printf "💡 Please review and fix the issues manually.\n"
     exit 1
 fi
+
+# 如果 ruff --fix 修改了文件，重新暂存
+echo "$staged_py_files" | xargs git add
 
 printf "\n"
 printf "✅ All checks passed! Ready to commit.\n"
