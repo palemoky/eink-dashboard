@@ -1,0 +1,89 @@
+repos:
+  # =======================================================
+  # 1. 基础卫生检查 (Standard Hooks)
+  #    运行阶段: pre-commit
+  # =======================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-toml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-added-large-files
+        args:
+          - --maxkb=1000
+
+  # =======================================================
+  # 2. 代码格式与 Lint (Ruff)
+  #    运行阶段: pre-commit
+  # =======================================================
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.6
+    hooks:
+      - id: ruff
+        args:
+          - --fix
+      - id: ruff-format
+
+  # =======================================================
+  # 3. 提交信息规范 (Commit Message)
+  #    运行阶段: commit-msg
+  # =======================================================
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.10.0
+    hooks:
+      - id: commitizen
+        stages:
+          - commit-msg
+
+  # =======================================================
+  # 4. 严格质量把关 (Mypy & Test)
+  #    运行阶段: pre-push (推送到服务器前)
+  # =======================================================
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (Type Check)
+        entry: uv run mypy src/
+        language: system
+        types:
+          - python
+        stages:
+          - pre-push
+        require_serial: true     # 防止被并行切片
+        pass_filenames: false    # 强制检查目录下所有文件
+      - id: pytest
+        name: pytest (Unit Test)
+        entry: uv run pytest     # 根据 pytest.ini 发现测试文件
+        language: system
+        types:
+          - python
+        stages:
+          - pre-push
+        pass_filenames: false
+
+  # =======================================================
+  # 5. 环境自动同步 (Environment Sync)
+  #    运行阶段: post-checkout, post-merge
+  # =======================================================
+  - repo: local
+    hooks:
+      - id: uv-sync
+        name: uv sync (Auto-update environment)
+        entry: uv sync
+        language: system
+        stages:
+          - post-checkout
+          - post-merge
+        always_run: true
+        pass_filenames: false
+        verbose: true
+
+default_install_hook_types:
+  - pre-commit
+  - pre-push
+  - commit-msg
+  - post-checkout
+  - post-merge

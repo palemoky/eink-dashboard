@@ -100,3 +100,30 @@ pythonpath = ["."]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"          # 使用标准的 Conventional Commits 规范
+tag_format = "v$version"          # Git Tag 格式，如 v0.1.0
+version_scheme = "pep440"         # 符合 Python 规范的版本号方案
+version_provider = "pep621"       # 🌟 关键：直接读取 [project] 下的 version，不需重复配置
+update_changelog_on_bump = true   # cz bump 时自动更新 CHANGELOG.md
+major_version_zero = true         # 0.x.x 版本时，Breaking Change 不会升到 1.0，而是升 0.2 (适合开发初期)
+
+scopes = [
+    "hardware",   # 涉及 GPIO, SPI, 树莓派硬件的代码
+    "render",     # 涉及 Pillow 绘图、布局的代码
+    "data",       # 涉及数据获取 (Notion, GSheet, HTTPX)
+    "ui",         # 涉及界面显示逻辑
+    "docker",     # 涉及 Dockerfile, docker-compose
+    "ci",         # 涉及 GitHub Actions, pre-commit
+    "deps",       # 依赖升级
+    "docs",       # 文档修改
+]
+
+bump_message = "chore(release): bump version $current_version -> $new_version"
+annotated_tag = true              # 创建带有注释的 Tag
+changelog_file = "CHANGELOG.md"   # 变更日志文件名
+changelog_incremental = false     # false=每次重写头部，true=只追加
+
+[tool.commitizen.customize]
+changelog_pattern = "^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\\(.*\\))?:!?"
