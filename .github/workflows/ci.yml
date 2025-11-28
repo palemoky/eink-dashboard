@@ -7,8 +7,12 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
+  quality-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -29,11 +33,15 @@ jobs:
         run: |
           uv sync --frozen --extra dev
 
+      - name: Check code formatting
+        run: uv run ruff format --check src/ tests/
+
+      - name: Lint code
+        run: uv run ruff check src/ tests/
+
+      - name: Type check
+        run: uv run mypy src/
+
       - name: Run tests
         run: |
           uv run python -m pytest tests/
-
-      - name: Code quality checks
-        run: |
-          uv run ruff format --check src/ tests/
-          uv run ruff check src/ tests/
