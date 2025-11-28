@@ -102,7 +102,6 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 
 [tool.commitizen]
-name = "cz_conventional_commits"          # 使用标准的 Conventional Commits 规范
 tag_format = "v$version"          # Git Tag 格式，如 v0.1.0
 version_scheme = "pep440"         # 符合 Python 规范的版本号方案
 version_provider = "pep621"       # 🌟 关键：直接读取 [project] 下的 version，不需重复配置
