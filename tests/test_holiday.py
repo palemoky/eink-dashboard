@@ -3,7 +3,7 @@
 import pendulum
 
 from src.config import Config
-from src.holiday import HolidayManager
+from src.layouts.holiday import HolidayManager
 
 
 def test_holiday_birthday(monkeypatch):
