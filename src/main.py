@@ -188,7 +188,7 @@ def generate_image(display_mode: str, data: dict, epd, layout) -> Image.Image:
 
         case "holiday":
             # Holiday mode: full screen greeting message
-            from src.holiday import HolidayManager
+            from src.layouts.holiday import HolidayManager
 
             holiday_manager = HolidayManager()
             holiday = holiday_manager.get_holiday()
@@ -259,7 +259,7 @@ def get_display_mode(now: pendulum.DateTime) -> str:
     Returns:
         Display mode string
     """
-    from src.holiday import HolidayManager
+    from src.layouts.holiday import HolidayManager
 
     # Check for holiday first (highest priority)
     holiday_manager = HolidayManager()

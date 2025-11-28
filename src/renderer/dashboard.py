@@ -350,6 +350,61 @@ class DashboardRenderer:
             points.append((x + math.cos(angle_inner) * 10 * s, y + math.sin(angle_inner) * 10 * s))
         draw.polygon(points, outline=0)
 
+    def draw_icon_tree(self, draw, x, y, size=60):
+        """Draw a Christmas tree icon."""
+        s = size / 60.0
+
+        # Tree layers (3 triangular sections)
+        # Top layer
+        top_points = [
+            (x, y - 25 * s),  # Top point
+            (x - 12 * s, y - 10 * s),  # Bottom left
+            (x + 12 * s, y - 10 * s),  # Bottom right
+        ]
+        draw.polygon(top_points, fill=0)
+
+        # Middle layer
+        mid_points = [
+            (x, y - 15 * s),  # Top point
+            (x - 16 * s, y + 2 * s),  # Bottom left
+            (x + 16 * s, y + 2 * s),  # Bottom right
+        ]
+        draw.polygon(mid_points, fill=0)
+
+        # Bottom layer
+        bottom_points = [
+            (x, y - 3 * s),  # Top point
+            (x - 20 * s, y + 15 * s),  # Bottom left
+            (x + 20 * s, y + 15 * s),  # Bottom right
+        ]
+        draw.polygon(bottom_points, fill=0)
+
+        # Trunk
+        trunk_width = 6 * s
+        trunk_height = 10 * s
+        draw.rectangle(
+            (x - trunk_width / 2, y + 15 * s, x + trunk_width / 2, y + 15 * s + trunk_height),
+            fill=0,
+        )
+
+        # Star on top
+        star_size = 8 * s
+        star_y = y - 30 * s
+        star_points = []
+        for i in range(5):
+            angle = math.radians(i * 72 - 18)
+            star_points.append(
+                (x + math.cos(angle) * star_size, star_y + math.sin(angle) * star_size)
+            )
+            angle_inner = math.radians(i * 72 + 18)
+            star_points.append(
+                (
+                    x + math.cos(angle_inner) * star_size * 0.4,
+                    star_y + math.sin(angle_inner) * star_size * 0.4,
+                )
+            )
+        draw.polygon(star_points, fill=0)
+
     def draw_full_screen_message(self, draw, width, height, title, message, icon_type=None):
         """绘制全屏消息（用于节日祝福）"""
         center_x = width // 2
@@ -369,6 +424,8 @@ class DashboardRenderer:
                     self.draw_icon_heart(draw, center_x, icon_y, size=80)
                 case "lantern":
                     self.draw_icon_lantern(draw, center_x, icon_y, size=80)
+                case "tree":
+                    self.draw_icon_tree(draw, center_x, icon_y, size=80)
                 case _:
                     self.draw_icon_star(draw, center_x, icon_y, size=80)
 

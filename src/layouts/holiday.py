@@ -7,7 +7,7 @@ and provides appropriate greeting messages and icons.
 import pendulum
 from borax.calendars.lunardate import LunarDate
 
-from .config import Config
+from ..config import Config
 
 
 class HolidayManager:
@@ -81,7 +81,7 @@ class HolidayManager:
                     "name": "Christmas",
                     "title": "Merry Christmas!",
                     "message": "Jingle Bells",
-                    "icon": "star",
+                    "icon": "tree",
                 }
 
         # 5. 匹配农历日期
