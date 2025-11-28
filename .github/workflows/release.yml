@@ -105,7 +105,7 @@ jobs:
         run: |
           chmod +x .github/scripts/cleanup-ghcr-prerelease.sh
           .github/scripts/cleanup-ghcr-prerelease.sh "${{ env.PACKAGE_NAME }}" "${{ env.OWNER }}"
-          
+
           chmod +x .github/scripts/cleanup-dockerhub.sh
           .github/scripts/cleanup-dockerhub.sh \
             "${{ secrets.DOCKERHUB_USERNAME }}" \

@@ -32,10 +32,10 @@ OLD_TAGS=$(echo "$TAGS" | head -n -2)
 if [ -n "$OLD_TAGS" ]; then
   COUNT=$(echo "$OLD_TAGS" | wc -l | tr -d ' ')
   echo "📦 Found $COUNT old tags to delete (keeping latest 2)"
-  
+
   DELETED=0
   FAILED=0
-  
+
   echo "$OLD_TAGS" | while read tag; do
     if curl -X DELETE \
       -H "Authorization: JWT ${HUB_TOKEN}" \
@@ -48,7 +48,7 @@ if [ -n "$OLD_TAGS" ]; then
       FAILED=$((FAILED + 1))
     fi
   done
-  
+
   echo ""
   echo "📊 Summary: Deleted $DELETED tags, $FAILED failed"
 else

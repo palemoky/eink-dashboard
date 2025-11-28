@@ -29,10 +29,10 @@ VERSION_IDS=$(echo "$VERSIONS" | jq -r '.id')
 if [ -n "$VERSION_IDS" ]; then
   COUNT=$(echo "$VERSION_IDS" | wc -l | tr -d ' ')
   echo "📦 Found $COUNT old pre-release versions to delete (keeping latest 2)"
-  
+
   DELETED=0
   FAILED=0
-  
+
   echo "$VERSION_IDS" | while read version_id; do
     # Try org endpoint first, fall back to user endpoint
     if gh api \
@@ -55,7 +55,7 @@ if [ -n "$VERSION_IDS" ]; then
       FAILED=$((FAILED + 1))
     fi
   done
-  
+
   echo ""
   echo "📊 Summary: Deleted $DELETED versions, $FAILED failed"
 else

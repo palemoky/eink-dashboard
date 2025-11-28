@@ -31,16 +31,16 @@ UNTAGGED_IDS=$(gh api \
 if [ -n "$UNTAGGED_IDS" ]; then
   COUNT=$(echo "$UNTAGGED_IDS" | wc -l | tr -d ' ')
   echo "📦 Found $COUNT untagged images to delete"
-  
+
   DELETED=0
   FAILED=0
-  
+
   echo "$UNTAGGED_IDS" | while read version_id; do
     # Skip if version_id is empty or looks like JSON
     if [ -z "$version_id" ] || [[ "$version_id" == *"{"* ]]; then
       continue
     fi
-    
+
     # Delete using the determined endpoint
     if gh api \
       --method DELETE \
@@ -55,10 +55,10 @@ if [ -n "$UNTAGGED_IDS" ]; then
       FAILED=$((FAILED + 1))
     fi
   done
-  
+
   echo ""
   echo "📊 Summary: Deleted $DELETED untagged images, $FAILED failed"
-  
+
   # Write to GitHub step summary
   if [ -n "$GITHUB_STEP_SUMMARY" ]; then
     echo "### 🧹 Untagged Images Cleanup" >> "$GITHUB_STEP_SUMMARY"
@@ -67,7 +67,7 @@ if [ -n "$UNTAGGED_IDS" ]; then
   fi
 else
   echo "✨ No untagged images to delete"
-  
+
   if [ -n "$GITHUB_STEP_SUMMARY" ]; then
     echo "### 🧹 Untagged Images Cleanup" >> "$GITHUB_STEP_SUMMARY"
     echo "✨ No untagged images found" >> "$GITHUB_STEP_SUMMARY"

@@ -9,8 +9,9 @@ from unittest.mock import patch
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from src.config import Config  # noqa: E402
 from src.layout import DashboardLayout  # noqa: E402
+
+from src.config import Config  # noqa: E402
 
 
 def generate_screenshot(

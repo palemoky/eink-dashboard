@@ -123,7 +123,7 @@ pip install uv
     ```bash
     # Using uv (recommended, much faster)
     uv sync --all-extras
-    
+
     # Or install only production dependencies
     uv sync
     ```

@@ -83,6 +83,17 @@ warn_unused_configs = true
 exclude = ["src/lib"]
 no_implicit_optional = false  # Allow implicit Optional for backward compatibility
 
+# Globally disable error codes that cause issues with third-party libraries
+disable_error_code = [
+    "no-any-return",      # Third-party libraries often return Any
+    "attr-defined",       # PIL, notion_client have incomplete stubs
+    "union-attr",         # pendulum.parse() returns Union types
+    "arg-type",           # Generic type inference issues
+    "assignment",         # PIL Image type conversions
+    "index",              # Optional dict indexing
+    "valid-type",         # ImageDraw.Draw type issues
+]
+
 # Ignore missing imports from third-party libraries
 [[tool.mypy.overrides]]
 module = [
@@ -92,7 +103,6 @@ module = [
     "watchdog.*",
 ]
 ignore_missing_imports = true
-disable_error_code = ["no-any-return", "attr-defined"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

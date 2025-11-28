@@ -25,11 +25,11 @@ You can choose from four TODO data sources:
    ## Goals
    - English Practice (Daily)
    - Daily Gym Workout Routine
-   
+
    ## Must
    - Fix bug #123
    - Review PR #456
-   
+
    ## Optional
    - Read documentation
    - Refactor code

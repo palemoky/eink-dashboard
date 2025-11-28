@@ -27,7 +27,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 # 3. 安装 Python 依赖
-ENV UV_COMPILE_BYTECODE=1 
+ENV UV_COMPILE_BYTECODE=1
 COPY pyproject.toml uv.lock ./
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project --no-dev --extra hardware
