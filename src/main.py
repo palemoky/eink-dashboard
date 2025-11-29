@@ -186,6 +186,12 @@ async def hackernews_pagination_task(epd, layout, dm, stop_event: asyncio.Event)
                 # Timeout is normal - time to advance page
                 pass
 
+            # Check if in quiet hours before refreshing
+            in_quiet, _ = is_in_quiet_hours()
+            if in_quiet:
+                logger.debug("⏸️  Skipping HN partial refresh (quiet hours)")
+                continue
+
             # Fetch next page
             from src.providers.hackernews import get_hackernews
 
