@@ -44,6 +44,7 @@ data/
 .coverage
 htmlcov/
 .tox/
+mocks/images/
 
 # Environment variables
 .env
