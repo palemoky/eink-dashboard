@@ -1,11 +1,7 @@
-"""Dashboard data provider for coordinating API calls and caching.
+"""Dashboard data provider - Main coordinator.
 
-Manages HTTP client lifecycle, coordinates concurrent data fetching
-from multiple providers with error handling, fallback values, and caching.
-
-This module contains:
-- DataManager class for orchestrating data fetching
-- Individual API provider functions (weather, GitHub, BTC, VPS, etc.)
+Manages HTTP client lifecycle and coordinates data fetching from multiple providers.
+Individual providers are in separate modules for better organization.
 """
 
 import asyncio
@@ -14,75 +10,27 @@ import logging
 
 import httpx
 import pendulum
-from tenacity import (
-    before_sleep_log,
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_fixed,
-)
 
 from ..config import Config
+from ..core.cache import cached
+from ..exceptions import ProviderError
+from .btc import get_btc_data
+from .vps import get_vps_info
+
+# Import individual providers
+from .weather import get_weather
 
 logger = logging.getLogger(__name__)
 
-# Constants
-OPENWEATHER_URL = "http://api.openweathermap.org/data/2.5/weather"
 GITHUB_GRAPHQL_URL = "https://api.github.com/graphql"
-VPS_API_URL = "https://api.64clouds.com/v1/getServiceInfo"
-COINGECKO_URL = "https://api.coingecko.com/api/v3/simple/price"
-
-# Retry strategy for API calls: 3 attempts with 2 second wait
-retry_strategy = retry(
-    stop=stop_after_attempt(3),
-    wait=wait_fixed(2),
-    retry=retry_if_exception_type((httpx.RequestError, httpx.HTTPStatusError)),
-    before_sleep=before_sleep_log(logger, logging.WARNING),
-)
 
 
-# ===== API Provider Functions =====
+# ===== GitHub Provider (kept here due to complexity) =====
 
 
-@retry_strategy
-async def get_weather(client: httpx.AsyncClient):
-    """Fetch current weather data from OpenWeatherMap API.
-
-    Args:
-        client: Async HTTP client instance
-
-    Returns:
-        Dictionary containing temperature, description, and icon name
-
-    Raises:
-        httpx.HTTPError: If API request fails
-    """
-    if not Config.OPENWEATHER_API_KEY:
-        return {"temp": "13.9", "desc": "Sunny", "icon": "Clear"}
-
-    url = OPENWEATHER_URL
-    params = {"q": Config.CITY_NAME, "appid": Config.OPENWEATHER_API_KEY, "units": "metric"}
-
-    try:
-        res = await client.get(url, params=params, timeout=10.0)
-        res.raise_for_status()
-        data = res.json()
-        return {
-            "temp": str(round(data["main"]["temp"], 1)),
-            "desc": data["weather"][0]["main"],
-            "icon": data["weather"][0]["main"],
-        }
-    except Exception as e:
-        logger.error(f"Weather API Error: {e}")
-        if isinstance(e, (httpx.RequestError, httpx.HTTPStatusError)):
-            raise
-        raise RuntimeError(f"Weather API Error: {e}") from e
-
-
-@retry_strategy
+@cached(ttl=300)  # Cache for 5 minutes
 async def get_github_commits(client: httpx.AsyncClient) -> dict[str, int]:
-    """
-    Fetch GitHub contributions strictly matching personal homepage.
+    """Fetch GitHub contributions matching personal homepage.
 
     Args:
         client: httpx.AsyncClient instance
@@ -100,14 +48,10 @@ async def get_github_commits(client: httpx.AsyncClient) -> dict[str, int]:
         "Content-Type": "application/json",
     }
 
-    # 用户本地时间
     now_local = pendulum.now(Config.hardware.timezone)
-
-    # Always fetch from start of year to calculate all stats
     start_time = now_local.start_of("year")
     end_time = now_local
 
-    # 转换为 UTC 给 GitHub API
     start_utc = start_time.in_timezone("UTC").to_iso8601_string()
     end_utc = end_time.in_timezone("UTC").to_iso8601_string()
 
@@ -144,61 +88,45 @@ async def get_github_commits(client: httpx.AsyncClient) -> dict[str, int]:
 
         calendar = data["data"]["user"]["contributionsCollection"]["contributionCalendar"]
         weeks = calendar["weeks"]
-
-        # Year total: directly from API
         year_count = calendar["totalContributions"]
 
-        # Flatten all days for easier processing
         all_days = [day for week in weeks for day in week["contributionDays"]]
 
-        # Calculate date strings
         today_str = now_local.format("YYYY-MM-DD")
         current_month_prefix = now_local.format("YYYY-MM")
-        week_start = now_local.start_of("week")  # Monday of current week
+        week_start = now_local.start_of("week")
+        week_start_str = week_start.format("YYYY-MM-DD")
 
-        # Initialize counters
         day_count = 0
         week_count = 0
         month_count = 0
-
-        # Reverse iterate for efficiency (recent data is at the end)
-        week_start_str = week_start.format("YYYY-MM-DD")
 
         for day in reversed(all_days):
             date_str = day["date"]
             count = day["contributionCount"]
 
-            # Day count
             if date_str == today_str:
                 day_count = count
 
-            # Week count (current week from Monday to today)
-            # Use string comparison to avoid pendulum type issues
             if week_start_str <= date_str <= today_str:
                 week_count += count
 
-            # Month count (current month)
             if date_str.startswith(current_month_prefix):
                 month_count += count
 
         return {"day": day_count, "week": week_count, "month": month_count, "year": year_count}
 
+    except httpx.HTTPError as e:
+        logger.error(f"GitHub API Error: {e}")
+        raise ProviderError("github", "Failed to fetch commits", e) from e
     except Exception as e:
         logger.error(f"GitHub API Error: {e}")
         return {"day": 0, "week": 0, "month": 0, "year": 0}
 
 
 async def check_year_end_summary(client: httpx.AsyncClient):
-    """Check if today is year-end and fetch annual summary if so.
-
-    Args:
-        client: Async HTTP client instance
-
-    Returns:
-        Tuple of (is_year_end: bool, summary_data: dict | None)
-    """
+    """Check if today is year-end and fetch annual summary if so."""
     now = pendulum.now(Config.hardware.timezone)
-    # Trigger only on December 31st
     is_year_end = now.month == 12 and now.day == 31
 
     if is_year_end:
@@ -208,19 +136,8 @@ async def check_year_end_summary(client: httpx.AsyncClient):
     return False, None
 
 
-@retry_strategy
 async def get_github_year_summary(client: httpx.AsyncClient):
-    """Fetch detailed GitHub contribution data for the entire year.
-
-    Used for year-end summary display on December 31st.
-
-    Args:
-        client: Async HTTP client instance
-
-    Returns:
-        Dictionary with total, max, and average daily contributions,
-        or None if request fails
-    """
+    """Fetch detailed GitHub contribution data for the entire year."""
     if not Config.GITHUB_USERNAME or not Config.GITHUB_TOKEN:
         return None
 
@@ -231,7 +148,6 @@ async def get_github_year_summary(client: httpx.AsyncClient):
     start_of_year = now_local.start_of("year").in_timezone("UTC").to_iso8601_string()
     end_of_year = now_local.end_of("year").in_timezone("UTC").to_iso8601_string()
 
-    # Query contribution calendar for each day
     query = """
     query($username: String!, $from: DateTime!, $to: DateTime!) {
       user(login: $username) {
@@ -267,7 +183,6 @@ async def get_github_year_summary(client: httpx.AsyncClient):
         )
         total = calendar.get("totalContributions", 0)
 
-        # Calculate daily average and maximum
         days = []
         for week in calendar.get("weeks", []):
             for day in week.get("contributionDays", []):
@@ -282,66 +197,8 @@ async def get_github_year_summary(client: httpx.AsyncClient):
         return None
 
 
-async def get_vps_info(client: httpx.AsyncClient):
-    """Fetch VPS data usage percentage.
-
-    Args:
-        client: Async HTTP client instance
-
-    Returns:
-        Data usage percentage (0-100), or 0 if request fails
-    """
-    if not Config.VPS_API_KEY:
-        return 0
-
-    url = VPS_API_URL
-    params = {"veid": "1550095", "api_key": Config.VPS_API_KEY}
-
-    try:
-        res = await client.get(url, params=params, timeout=10.0)
-        data = res.json()
-        if data.get("error") != 0:
-            return 0
-        return int((data["data_counter"] / data["plan_monthly_data"]) * 100)
-    except Exception as e:
-        logger.error(f"VPS API Error: {e}")
-        if isinstance(e, (httpx.RequestError, httpx.HTTPStatusError)):
-            raise
-        raise RuntimeError(f"VPS API Error: {e}") from e
-
-
-@retry_strategy
-async def get_btc_data(client: httpx.AsyncClient):
-    """Fetch Bitcoin price and 24-hour change from CoinGecko API.
-
-    Args:
-        client: Async HTTP client instance
-
-    Returns:
-        Dictionary with USD price and 24h change percentage
-    """
-    url = COINGECKO_URL
-    params = {"ids": "bitcoin", "vs_currencies": "usd", "include_24hr_change": "true"}
-
-    try:
-        res = await client.get(url, params=params, timeout=10.0)
-        if res.status_code == 200:
-            return res.json().get("bitcoin", {"usd": 0, "usd_24h_change": 0})
-    except Exception as e:
-        logger.error(f"BTC API Error: {e}")
-        if isinstance(e, (httpx.RequestError, httpx.HTTPStatusError)):
-            raise
-        raise RuntimeError(f"BTC API Error: {e}") from e
-
-    return {"usd": "---", "usd_24h_change": 0}
-
-
 def get_week_progress():
-    """Calculate current week progress as percentage.
-
-    Returns:
-        Progress percentage (0-100) from start of week to now
-    """
+    """Calculate current week progress as percentage."""
     now = pendulum.now(Config.hardware.timezone)
     start_of_week = now.start_of("week")
     end_of_week = now.end_of("week")
@@ -364,18 +221,18 @@ class Dashboard:
         self.client = None
 
     async def __aenter__(self):
-        """异步上下文管理器入口"""
+        """Async context manager entry."""
         self.client = httpx.AsyncClient()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """异步上下文管理器退出"""
+        """Async context manager exit."""
         if self.client:
             await self.client.aclose()
         return False
 
     def load_cache(self):
-        """从缓存文件加载数据"""
+        """Load data from cache file."""
         if not self.cache_file.exists():
             return {}
         try:
@@ -386,7 +243,7 @@ class Dashboard:
             return {}
 
     def save_cache(self, data):
-        """保存数据到缓存文件"""
+        """Save data to cache file."""
         try:
             self.cache_file.parent.mkdir(parents=True, exist_ok=True)
             with open(self.cache_file, "w") as f:
@@ -400,7 +257,6 @@ class Dashboard:
 
         data = {"is_year_end": False, "github_year_summary": None}
 
-        # Use persistent client if available, otherwise create temporary one
         if self.client:
             is_year_end, github_year_summary = await check_year_end_summary(self.client)
             data["is_year_end"] = is_year_end
@@ -417,11 +273,8 @@ class Dashboard:
         """Fetch all data required for the main dashboard."""
         logger.info("Fetching dashboard data")
 
-        # Note: show_hackernews will be set by main loop based on time slots
-        # This is just a placeholder for initial data structure
         show_hackernews = False
 
-        # Initialize data structure
         data = {
             "weather": {},
             "github_commits": 0,
@@ -431,12 +284,11 @@ class Dashboard:
             "todo_goals": [],
             "todo_must": [],
             "todo_optional": [],
-            "hackernews": {},  # Changed to dict to hold pagination data
+            "hackernews": {},
             "show_hackernews": show_hackernews,
         }
 
-        # Dashboard mode: fetch all required data concurrently
-        # Use persistent client if available, otherwise create temporary one
+        # Fetch all data concurrently
         if self.client:
             async with asyncio.TaskGroup() as tg:
                 tasks = {}
@@ -462,7 +314,7 @@ class Dashboard:
         # Calculate week progress
         data["week_progress"] = get_week_progress()
 
-        # Fetch HackerNews data (preserve current page during refresh)
+        # Fetch HackerNews data
         from .hackernews import get_hackernews
 
         if self.client:
@@ -471,20 +323,19 @@ class Dashboard:
             async with httpx.AsyncClient() as client:
                 hn_data = await get_hackernews(client, reset_to_first=False)
 
-        # Store complete pagination data
         data["hackernews"] = hn_data
         logger.info(
             f"📰 Fetched HackerNews: Page {hn_data.get('page', 1)}/{hn_data.get('total_pages', 1)}"
         )
 
         # Conditionally fetch TODO lists based on time slots
-        # Check if we're in TODO time slot
-        from src.main import is_in_time_slots
+        from src.core import TimeSlots
 
-        show_todo = is_in_time_slots(Config.display.todo_time_slots)
+        todo_slots = TimeSlots(Config.display.todo_time_slots)
+        now = pendulum.now(Config.hardware.timezone)
+        show_todo = todo_slots.contains_hour(now.hour)
 
         if show_todo:
-            # Only fetch TODO if we're in TODO time slot
             from .todo import get_todo_lists
 
             todo_goals, todo_must, todo_optional = await get_todo_lists()
@@ -493,7 +344,6 @@ class Dashboard:
             data["todo_optional"] = todo_optional
             logger.info("📝 Fetched Todo Lists")
         else:
-            # Set empty lists if not in TODO time slot
             data["todo_goals"] = []
             data["todo_must"] = []
             data["todo_optional"] = []
@@ -503,10 +353,9 @@ class Dashboard:
         return data
 
     def _get_with_cache_fallback(self, task, key, default):
-        """从任务获取结果，失败时使用缓存"""
+        """Get result from task, use cache on failure."""
         try:
             result = task.result()
-            # 保存到缓存
             cache = self.load_cache()
             cache[key] = result
             self.save_cache(cache)

@@ -4,15 +4,16 @@ Fetches 50 best stories from Hacker News API, caches them, and provides
 paginated access with automatic page rotation.
 """
 
-import json
 import logging
-from datetime import datetime, timedelta
-from typing import Any
 
 import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from src.config import Config
+from src.core.cache import cached
+from src.core.state import StateManager
+from src.exceptions import ProviderError
+from src.types import HackerNewsData, HackerNewsStory
 
 logger = logging.getLogger(__name__)
 
@@ -20,74 +21,74 @@ logger = logging.getLogger(__name__)
 HN_BEST_STORIES_URL = "https://hacker-news.firebaseio.com/v0/beststories.json"
 HN_ITEM_URL = "https://hacker-news.firebaseio.com/v0/item/{}.json"
 
-# Cache and state files
-CACHE_FILE = Config.DATA_DIR / "hackernews_cache.json"
-STATE_FILE = Config.DATA_DIR / "hackernews_state.json"
+# State manager instance
+_state_manager = StateManager(Config.DATA_DIR)
 
 
-def _read_cache() -> dict[str, Any] | None:
-    """Read cached Hacker News data if available and fresh."""
-    if not CACHE_FILE.exists():
-        return None
+@cached(ttl=Config.display.hackernews_refresh_minutes * 60, maxsize=1)
+async def _fetch_all_stories(client: httpx.AsyncClient) -> list[HackerNewsStory]:
+    """Fetch all Hacker News stories (cached).
 
+    Args:
+        client: HTTP client instance
+
+    Returns:
+        List of story dictionaries
+
+    Raises:
+        ProviderError: If API request fails
+    """
     try:
-        with open(CACHE_FILE, encoding="utf-8") as f:
-            data = json.load(f)
+        logger.info("Fetching Hacker News best stories...")
 
-        cached_time = datetime.fromisoformat(data["timestamp"])
-        time_since_cache = datetime.now() - cached_time
-        cache_duration = timedelta(minutes=Config.display.hackernews_refresh_minutes)
+        # Fetch ALL story IDs (no limit)
+        response = await client.get(HN_BEST_STORIES_URL, timeout=10.0)
+        response.raise_for_status()
+        story_ids = response.json()
 
-        if time_since_cache > cache_duration:
-            logger.info(f"HN cache expired: age={int(time_since_cache.total_seconds() / 60)}min")
-            return None
+        logger.info(f"Fetched {len(story_ids)} HN story IDs")
 
-        logger.info(f"Using cached HN data ({len(data['stories'])} stories)")
-        return data
+        # Fetch details for ALL stories
+        stories: list[HackerNewsStory] = []
+        for story_id in story_ids:
+            story = await _fetch_story(client, story_id)
+            if not story:
+                continue
 
+            stories.append(
+                {
+                    "id": story_id,
+                    "title": story.get("title", ""),
+                    "score": story.get("score", 0),
+                }
+            )
+
+        if not stories:
+            logger.warning("No HN stories found")
+            return []
+
+        logger.info(f"Fetched {len(stories)} HN stories")
+        return stories
+
+    except httpx.HTTPError as e:
+        logger.error(f"Failed to fetch Hacker News: {e}")
+        raise ProviderError("hackernews", "Failed to fetch stories", e) from e
     except Exception as e:
-        logger.warning(f"Failed to read HN cache: {e}")
-        return None
-
-
-def _write_cache(stories: list[dict[str, Any]]) -> None:
-    """Write Hacker News data to cache."""
-    try:
-        CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        data = {"timestamp": datetime.now().isoformat(), "stories": stories}
-        with open(CACHE_FILE, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-        logger.debug(f"Cached {len(stories)} HN stories")
-    except Exception as e:
-        logger.warning(f"Failed to write HN cache: {e}")
-
-
-def _read_state() -> dict[str, Any]:
-    """Read pagination state."""
-    if not STATE_FILE.exists():
-        return {"current_page": 1}
-
-    try:
-        with open(STATE_FILE, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception as e:
-        logger.warning(f"Failed to read HN state: {e}")
-        return {"current_page": 1}
-
-
-def _write_state(state: dict[str, Any]) -> None:
-    """Write pagination state."""
-    try:
-        STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        with open(STATE_FILE, "w", encoding="utf-8") as f:
-            json.dump(state, f, indent=2)
-    except Exception as e:
-        logger.warning(f"Failed to write HN state: {e}")
+        logger.error(f"Unexpected error fetching Hacker News: {e}")
+        raise ProviderError("hackernews", "Unexpected error", e) from e
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
-async def _fetch_story(client: httpx.AsyncClient, story_id: int) -> dict[str, Any] | None:
-    """Fetch a single story from Hacker News API."""
+async def _fetch_story(client: httpx.AsyncClient, story_id: int) -> dict | None:
+    """Fetch a single story from Hacker News API.
+
+    Args:
+        client: HTTP client instance
+        story_id: Story ID to fetch
+
+    Returns:
+        Story data or None if failed
+    """
     try:
         response = await client.get(HN_ITEM_URL.format(story_id), timeout=10.0)
         response.raise_for_status()
@@ -99,7 +100,7 @@ async def _fetch_story(client: httpx.AsyncClient, story_id: int) -> dict[str, An
 
 async def get_hackernews(
     client: httpx.AsyncClient, advance_page: bool = False, reset_to_first: bool = False
-) -> dict[str, Any]:
+) -> HackerNewsData:
     """Fetch paginated Hacker News stories.
 
     Args:
@@ -114,10 +115,12 @@ async def get_hackernews(
         - total_pages: Total number of pages
         - start_idx: Starting index (1-indexed)
         - end_idx: Ending index (1-indexed)
+
+    Raises:
+        ProviderError: If fetching stories fails
     """
-    # Read state
-    state = _read_state()
-    current_page = state.get("current_page", 1)
+    # Read current page from state
+    current_page = await _state_manager.get("hackernews_page", default=1)
 
     # Reset to first page if requested
     if reset_to_first:
@@ -127,53 +130,27 @@ async def get_hackernews(
     if advance_page:
         current_page += 1
 
-    # Check cache first
-    cached = _read_cache()
+    # Fetch stories (uses cache decorator)
+    try:
+        stories = await _fetch_all_stories(client)
+    except ProviderError:
+        # Return empty result on error
+        return {
+            "stories": [],
+            "page": 1,
+            "total_pages": 1,
+            "start_idx": 1,
+            "end_idx": 0,
+        }
 
-    # If cache miss or expired, fetch new stories
-    if not cached:
-        try:
-            logger.info("Fetching Hacker News best stories...")
-
-            # Fetch ALL story IDs (no limit)
-            response = await client.get(HN_BEST_STORIES_URL, timeout=10.0)
-            response.raise_for_status()
-            story_ids = response.json()
-
-            logger.info(f"Fetched {len(story_ids)} HN story IDs")
-
-            # Fetch details for ALL stories
-            stories = []
-            for story_id in story_ids:
-                story = await _fetch_story(client, story_id)
-                if not story:
-                    continue
-
-                stories.append(
-                    {
-                        "id": story_id,
-                        "title": story.get("title", ""),
-                        "score": story.get("score", 0),
-                    }
-                )
-
-            if not stories:
-                logger.warning("No HN stories found")
-                return {"stories": [], "page": 1, "total_pages": 1, "start_idx": 1, "end_idx": 0}
-
-            logger.info(f"Fetched {len(stories)} HN stories")
-
-            # Cache the results
-            _write_cache(stories)
-
-            # Reset to page 1 when cache refreshes
-            current_page = 1
-
-        except Exception as e:
-            logger.error(f"Failed to fetch Hacker News: {e}")
-            return {"stories": [], "page": 1, "total_pages": 1, "start_idx": 1, "end_idx": 0}
-    else:
-        stories = cached["stories"]
+    if not stories:
+        return {
+            "stories": [],
+            "page": 1,
+            "total_pages": 1,
+            "start_idx": 1,
+            "end_idx": 0,
+        }
 
     # Calculate pagination
     per_page = Config.display.hackernews_stories_per_page
@@ -182,8 +159,7 @@ async def get_hackernews(
     # Wrap around if exceeded (cycle back to page 1)
     if current_page > total_pages:
         current_page = 1
-        # When cycling back, refetch stories
-        logger.info("Cycled through all HN pages, will refetch on next request")
+        logger.info("Cycled through all HN pages")
 
     # Calculate indices
     start_idx = (current_page - 1) * per_page + 1
@@ -193,7 +169,7 @@ async def get_hackernews(
     page_stories = stories[start_idx - 1 : end_idx]
 
     # Save state
-    _write_state({"current_page": current_page})
+    await _state_manager.set("hackernews_page", current_page)
 
     return {
         "stories": page_stories,

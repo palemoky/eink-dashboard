@@ -422,7 +422,9 @@ class Settings(BaseModel):
         return self.hardware.mock_epd
 
     def validate_required(self):
-        """Validate required environment variables."""
+        """Validate required environment variables and configuration consistency."""
+        from src.exceptions import ConfigError
+
         # Common placeholder values that should be treated as missing
         placeholders = {"", "your_key_here", "your_token", "your_username", "your_api_key"}
 
@@ -446,9 +448,45 @@ class Settings(BaseModel):
             for item in missing:
                 logger.error(item)
             logger.error("\nPlease set these variables in your .env file or environment.")
-            raise ValueError("Missing required configuration")
+            raise ConfigError("Missing required configuration")
+
+        # Cross-field validation
+        validation_errors = []
+
+        # Validate quiet hours
+        if self.hardware.quiet_start_hour == self.hardware.quiet_end_hour:
+            validation_errors.append(
+                f"Quiet hours start and end cannot be the same ({self.hardware.quiet_start_hour})"
+            )
+
+        # Validate refresh intervals
+        if self.display.hackernews_page_seconds >= self.display.hackernews_refresh_minutes * 60:
+            validation_errors.append(
+                f"HackerNews page duration ({self.display.hackernews_page_seconds}s) "
+                f"should be less than refresh interval "
+                f"({self.display.hackernews_refresh_minutes}min)"
+            )
+
+        # Validate TODO source dependencies
+        if self.todo.source == "gist" and not self.todo.gist_id:
+            validation_errors.append("TODO source is 'gist' but GIST_ID is not set")
+        elif self.todo.source == "notion" and (
+            not self.todo.notion_token or not self.todo.notion_database_id
+        ):
+            validation_errors.append(
+                "TODO source is 'notion' but NOTION_TOKEN or NOTION_DATABASE_ID is not set"
+            )
+        elif self.todo.source == "sheets" and not self.todo.google_sheets_id:
+            validation_errors.append("TODO source is 'sheets' but GOOGLE_SHEETS_ID is not set")
+
+        if validation_errors:
+            logger.error("❌ Configuration validation errors:")
+            for error in validation_errors:
+                logger.error(f"  • {error}")
+            raise ConfigError("Invalid configuration")
 
         logger.info("✅ All required environment variables are set")
+        logger.info("✅ Configuration validation passed")
 
     def reload(self):
         """Reload configuration from environment and .env file.
