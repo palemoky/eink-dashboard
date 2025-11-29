@@ -56,3 +56,23 @@ class WaveshareEPDDriver:
         # Waveshare 驱动通常需要 getbuffer
         buffer = self.epd.getbuffer(image)
         self.epd.display(buffer)
+
+    def display_partial(self, image: Image.Image, x: int, y: int, w: int, h: int) -> None:
+        """Display a partial region of the screen.
+
+        Args:
+            image: PIL Image to display (should be cropped to the region)
+            x: X coordinate of top-left corner
+            y: Y coordinate of top-left corner
+            w: Width of the region
+            h: Height of the region
+        """
+        if hasattr(self.epd, "display_Partial"):
+            buffer = self.epd.getbuffer(image)
+            self.epd.display_Partial(buffer, x, y, x + w, y + h)
+        else:
+            # Fallback to full display if partial not supported
+            logger.warning(
+                f"Partial display not supported for {self.epd.__class__.__name__}, using full display"
+            )
+            self.display(image)

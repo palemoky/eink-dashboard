@@ -23,3 +23,15 @@ class EPDDriver(Protocol):
     def display(self, image: Image.Image) -> None:
         """Display a PIL Image"""
         ...
+
+    def display_partial(self, image: Image.Image, x: int, y: int, w: int, h: int) -> None:
+        """Display a PIL Image in a partial region.
+
+        Args:
+            image: PIL Image to display
+            x: X coordinate of top-left corner
+            y: Y coordinate of top-left corner
+            w: Width of the region
+            h: Height of the region
+        """
+        ...
