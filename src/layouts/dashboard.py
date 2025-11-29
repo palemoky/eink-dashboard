@@ -452,7 +452,7 @@ class DashboardLayout:
         # Define footer components (restoring old layout: Weekly(Ring), Commits(Text), BTC(Text), VPS(Ring))
         footer_items = [
             {"label": "Weekly", "value": week_prog, "type": "ring"},
-            {"label": "Commits", "value": commits, "type": "text"},
+            {"label": "Commits", "value": commits, "type": "cross"},
             {"label": btc_label, "value": btc_val, "type": "text"},
             {"label": "VPS Data", "value": vps_data, "type": "ring"},
         ]
@@ -497,32 +497,100 @@ class DashboardLayout:
                     font=r.font_xs,
                     align_y_center=True,
                 )
-            else:
+            elif item["type"] == "cross":
                 # Draw text value
                 value = item["value"]
 
-                # Special handling for GitHub stats (dictionary)
+                # Special handling for GitHub stats (dictionary) - draw in cross layout
                 if (
                     isinstance(value, dict)
                     and "day" in value
+                    and "week" in value
                     and "month" in value
                     and "year" in value
                 ):
-                    # Format: Day / Month / Year
-                    display_text = f"{value['day']} / {value['month']} / {value['year']}"
-                    font = r.font_m  # Use medium font to fit longer text
+                    # Cross layout:
+                    #   Day   Week
+                    #       +
+                    #  Month  Year
+
+                    # Calculate positions relative to center
+                    offset_x = 25  # Horizontal offset from center
+                    offset_y = 15  # Vertical offset from center
+
+                    # Top-left: Day
+                    r.draw_centered_text(
+                        draw,
+                        center_x - offset_x,
+                        self.FOOTER_CENTER_Y - offset_y,
+                        str(value["day"]),
+                        font=r.font_m,
+                        align_y_center=True,
+                    )
+
+                    # Top-right: Week
+                    r.draw_centered_text(
+                        draw,
+                        center_x + offset_x,
+                        self.FOOTER_CENTER_Y - offset_y,
+                        str(value["week"]),
+                        font=r.font_m,
+                        align_y_center=True,
+                    )
+
+                    # Bottom-left: Month
+                    r.draw_centered_text(
+                        draw,
+                        center_x - offset_x,
+                        self.FOOTER_CENTER_Y + offset_y,
+                        str(value["month"]),
+                        font=r.font_m,
+                        align_y_center=True,
+                    )
+
+                    # Bottom-right: Year
+                    r.draw_centered_text(
+                        draw,
+                        center_x + offset_x,
+                        self.FOOTER_CENTER_Y + offset_y,
+                        str(value["year"]),
+                        font=r.font_m,
+                        align_y_center=True,
+                    )
+
+                    # Draw cross lines
+                    # Vertical line
+                    draw.line(
+                        (
+                            center_x,
+                            self.FOOTER_CENTER_Y - offset_y - 10,
+                            center_x,
+                            self.FOOTER_CENTER_Y + offset_y + 10,
+                        ),
+                        fill=0,
+                        width=1,
+                    )
+                    # Horizontal line
+                    draw.line(
+                        (
+                            center_x - offset_x - 15,
+                            self.FOOTER_CENTER_Y,
+                            center_x + offset_x + 15,
+                            self.FOOTER_CENTER_Y,
+                        ),
+                        fill=0,
+                        width=1,
+                    )
                 else:
                     display_text = str(value)
-                    font = r.font_date_big
-
-                r.draw_centered_text(
-                    draw,
-                    center_x,
-                    self.FOOTER_CENTER_Y,
-                    display_text,
-                    font=font,
-                    align_y_center=True,
-                )
+                    r.draw_centered_text(
+                        draw,
+                        center_x,
+                        self.FOOTER_CENTER_Y,
+                        display_text,
+                        font=r.font_date_big,
+                        align_y_center=True,
+                    )
 
     def _draw_year_end_summary(self, draw, width, height, summary_data):
         """

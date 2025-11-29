@@ -88,11 +88,11 @@ async def get_github_commits(client: httpx.AsyncClient) -> dict[str, int]:
         client: httpx.AsyncClient instance
 
     Returns:
-        dict: {"day": int, "month": int, "year": int}
+        dict: {"day": int, "week": int, "month": int, "year": int}
     """
     if not Config.GITHUB_USERNAME or not Config.GITHUB_TOKEN:
         logger.warning("GitHub username or token not configured")
-        return {"day": 0, "month": 0, "year": 0}
+        return {"day": 0, "week": 0, "month": 0, "year": 0}
 
     url = GITHUB_GRAPHQL_URL
     headers = {
@@ -116,6 +116,7 @@ async def get_github_commits(client: httpx.AsyncClient) -> dict[str, int]:
       user(login: $username) {
         contributionsCollection(from: $from, to: $to) {
           contributionCalendar {
+            totalContributions
             weeks {
               contributionDays {
                 date
@@ -139,52 +140,52 @@ async def get_github_commits(client: httpx.AsyncClient) -> dict[str, int]:
 
         if "errors" in data:
             logger.error(f"GitHub GraphQL Error: {data['errors']}")
-            return {"day": 0, "month": 0, "year": 0}
+            return {"day": 0, "week": 0, "month": 0, "year": 0}
 
-        weeks = (
-            data.get("data", {})
-            .get("user", {})
-            .get("contributionsCollection", {})
-            .get("contributionCalendar", {})
-            .get("weeks", [])
-        )
+        calendar = data["data"]["user"]["contributionsCollection"]["contributionCalendar"]
+        weeks = calendar["weeks"]
 
-        # 展平每天的贡献
-        daily_counts = []
-        for week in weeks:
-            for day in week.get("contributionDays", []):
-                daily_counts.append({"date": day["date"], "count": day["contributionCount"]})
+        # Year total: directly from API
+        year_count = calendar["totalContributions"]
 
-        # Calculate stats
+        # Flatten all days for easier processing
+        all_days = [day for week in weeks for day in week["contributionDays"]]
+
+        # Calculate date strings
         today_str = now_local.format("YYYY-MM-DD")
-        month_str = now_local.format("YYYY-MM")
-        year_str = now_local.format("YYYY")
+        current_month_prefix = now_local.format("YYYY-MM")
+        week_start = now_local.start_of("week")  # Monday of current week
 
+        # Initialize counters
         day_count = 0
+        week_count = 0
         month_count = 0
-        year_count = 0
 
-        for d in daily_counts:
-            date_str = d["date"]
-            count = d["count"]
+        # Reverse iterate for efficiency (recent data is at the end)
+        week_start_str = week_start.format("YYYY-MM-DD")
 
-            # Year total (since we fetched from start of year)
-            if pendulum.parse(date_str).format("YYYY") == year_str:
-                year_count += count
+        for day in reversed(all_days):
+            date_str = day["date"]
+            count = day["contributionCount"]
 
-                # Month total
-                if pendulum.parse(date_str).format("YYYY-MM") == month_str:
-                    month_count += count
+            # Day count
+            if date_str == today_str:
+                day_count = count
 
-                    # Day total
-                    if date_str == today_str:
-                        day_count = count
+            # Week count (current week from Monday to today)
+            # Use string comparison to avoid pendulum type issues
+            if week_start_str <= date_str <= today_str:
+                week_count += count
 
-        return {"day": day_count, "month": month_count, "year": year_count}
+            # Month count (current month)
+            if date_str.startswith(current_month_prefix):
+                month_count += count
+
+        return {"day": day_count, "week": week_count, "month": month_count, "year": year_count}
 
     except Exception as e:
         logger.error(f"GitHub API Error: {e}")
-        return {"day": 0, "month": 0, "year": 0}
+        return {"day": 0, "week": 0, "month": 0, "year": 0}
 
 
 async def check_year_end_summary(client: httpx.AsyncClient):

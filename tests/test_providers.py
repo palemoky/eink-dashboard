@@ -45,4 +45,4 @@ async def test_get_github_commits_fail():
     ):
         # Function should return zeroed dict on error, not raise exception
         result = await get_github_commits(mock_client)
-        assert result == {"day": 0, "month": 0, "year": 0}
+        assert result == {"day": 0, "week": 0, "month": 0, "year": 0}
