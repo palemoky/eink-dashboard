@@ -184,8 +184,9 @@ async def hackernews_pagination_task(epd, layout, dm, stop_event: asyncio.Event)
             layout._current_hackernews = hn_data
 
             # Create FULL-SIZE image (EPD requires full image for partial refresh)
-            # Use mode '1' (black and white) to match the display format
-            full_img = Image.new("1", (epd.width, epd.height), 255)
+            # Use grayscale mode if enabled, otherwise black/white
+            image_mode = "L" if Config.hardware.use_grayscale else "1"
+            full_img = Image.new(image_mode, (epd.width, epd.height), 255)
             full_draw = ImageDraw.Draw(full_img)
 
             # Draw HN section at the correct position
@@ -319,7 +320,8 @@ def generate_image(display_mode: str, data: dict, epd, layout) -> Image.Image:
             holiday_manager = HolidayManager()
             holiday = holiday_manager.get_holiday()
 
-            image = Image.new("1", (epd.width, epd.height), 255)
+            image_mode = "L" if Config.hardware.use_grayscale else "1"
+            image = Image.new(image_mode, (epd.width, epd.height), 255)
             draw = ImageDraw.Draw(image)
             layout.renderer.draw_full_screen_message(
                 draw,
@@ -334,7 +336,8 @@ def generate_image(display_mode: str, data: dict, epd, layout) -> Image.Image:
 
         case "year_end":
             # Year-end summary: GitHub contribution summary
-            image = Image.new("1", (epd.width, epd.height), 255)
+            image_mode = "L" if Config.hardware.use_grayscale else "1"
+            image = Image.new(image_mode, (epd.width, epd.height), 255)
             draw = ImageDraw.Draw(image)
             layout._draw_year_end_summary(draw, epd.width, epd.height, data["github_year_summary"])
             logger.info("🎊 Year-end summary")

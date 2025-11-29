@@ -18,6 +18,13 @@ class DashboardRenderer:
     Supports both file-based icons and programmatic drawing as fallback.
     """
 
+    # Grayscale color constants (for 4-level grayscale mode)
+    # Values match PIL's "L" mode: 0=black, 255=white
+    COLOR_BLACK = 0  # 黑色 - 主要内容
+    COLOR_DARK_GRAY = 128  # 深灰 - 标签、元数据
+    COLOR_LIGHT_GRAY = 192  # 浅灰 - 辅助信息、分隔线
+    COLOR_WHITE = 255  # 白色 - 背景
+
     def __init__(self):
         self._load_fonts()
 
@@ -107,8 +114,15 @@ class DashboardRenderer:
         percent: int | float,
         thickness: int = 5,
     ):
+        """Draw a progress ring with optional grayscale support."""
+        from ..config import Config
+
+        # Use grayscale colors if enabled
+        ring_color = self.COLOR_DARK_GRAY if Config.hardware.use_grayscale else 0
+        bg_color = self.COLOR_WHITE
+
         bbox = (x - radius, y - radius, x + radius, y + radius)
-        draw.ellipse(bbox, outline=0, width=1)
+        draw.ellipse(bbox, outline=ring_color, width=1)
 
         start_angle = -90
         # Ensure percent is int/float
@@ -119,10 +133,12 @@ class DashboardRenderer:
 
         end_angle = -90 + (360 * (p / 100.0))
         if p > 0:
-            draw.pieslice(bbox, start=start_angle, end=end_angle, fill=0)
+            draw.pieslice(bbox, start=start_angle, end=end_angle, fill=ring_color)
 
         inner_r = radius - thickness
-        draw.ellipse((x - inner_r, y - inner_r, x + inner_r, y + inner_r), fill=255, outline=0)
+        draw.ellipse(
+            (x - inner_r, y - inner_r, x + inner_r, y + inner_r), fill=bg_color, outline=ring_color
+        )
 
     # --- Icons (Scaled) ---
 

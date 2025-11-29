@@ -7,10 +7,11 @@ logger = logging.getLogger(__name__)
 
 
 class WaveshareEPDDriver:
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, use_grayscale: bool = False):
         """
         初始化 Waveshare 驱动适配器
         :param model_name: 驱动模块名称，例如 'epd7in5_V2'
+        :param use_grayscale: 是否使用 4 级灰度模式
         """
         try:
             # 动态导入 src.lib.waveshare_epd.{model_name}
@@ -21,7 +22,24 @@ class WaveshareEPDDriver:
             self.epd = self.epd_module.EPD()
             self.width = self.epd.width
             self.height = self.epd.height
-            logger.info(f"Loaded Waveshare driver: {model_name} ({self.width}x{self.height})")
+            self.use_grayscale = use_grayscale
+
+            # Check if grayscale is supported
+            if use_grayscale:
+                if not hasattr(self.epd, "init_4Gray"):
+                    logger.warning(
+                        f"Grayscale mode requested but not supported by {model_name}, "
+                        "falling back to black/white mode"
+                    )
+                    self.use_grayscale = False
+                else:
+                    logger.info(
+                        f"Loaded Waveshare driver: {model_name} ({self.width}x{self.height}) - 4-Gray Mode"
+                    )
+            else:
+                logger.info(
+                    f"Loaded Waveshare driver: {model_name} ({self.width}x{self.height}) - B/W Mode"
+                )
 
         except ImportError as e:
             logger.error(f"Failed to load Waveshare driver '{model_name}': {e}")
@@ -38,8 +56,12 @@ class WaveshareEPDDriver:
         Args:
             fast: If True, use fast refresh mode (less flashing but may have ghosting).
                   If False, use full refresh mode (more flashing but better quality).
+                  Note: Fast mode is not available in grayscale mode.
         """
-        if fast and hasattr(self.epd, "init_fast"):
+        if self.use_grayscale:
+            logger.debug("Initializing display in 4-gray mode")
+            self.epd.init_4Gray()
+        elif fast and hasattr(self.epd, "init_fast"):
             logger.debug("Using fast refresh mode")
             self.epd.init_fast()
         else:
@@ -56,17 +78,28 @@ class WaveshareEPDDriver:
         """Convert PIL Image to buffer format for the display.
 
         Args:
-            image: PIL Image to convert
+            image: PIL Image to convert (mode "L" for grayscale, "1" for B/W)
 
         Returns:
             Buffer in the format expected by the display
         """
-        return self.epd.getbuffer(image)
+        if self.use_grayscale and hasattr(self.epd, "getbuffer_4Gray"):
+            return self.epd.getbuffer_4Gray(image)
+        else:
+            return self.epd.getbuffer(image)
 
     def display(self, image: Image.Image) -> None:
-        # Waveshare 驱动通常需要 getbuffer
-        buffer = self.epd.getbuffer(image)
-        self.epd.display(buffer)
+        """Display an image on the e-ink screen.
+
+        Args:
+            image: PIL Image to display (mode "L" for grayscale, "1" for B/W)
+        """
+        if self.use_grayscale and hasattr(self.epd, "display_4Gray"):
+            buffer = self.epd.getbuffer_4Gray(image)
+            self.epd.display_4Gray(buffer)
+        else:
+            buffer = self.epd.getbuffer(image)
+            self.epd.display(buffer)
 
     def display_partial_buffer(
         self, buffer, x_start: int, y_start: int, x_end: int, y_end: int

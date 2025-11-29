@@ -108,6 +108,9 @@ class HardwareConfig(BaseModel):
     timezone: str = Field(default="Asia/Shanghai", description="IANA timezone name")
     epd_model: str = Field(default="epd7in5_V2", description="E-Paper driver model")
     mock_epd: bool = Field(default=False, description="Force using Mock driver for testing")
+    use_grayscale: bool = Field(
+        default=True, description="Enable 4-level grayscale mode for better visual hierarchy"
+    )
 
     @classmethod
     def from_env(cls) -> "HardwareConfig":
@@ -120,6 +123,7 @@ class HardwareConfig(BaseModel):
             timezone=os.getenv("TIMEZONE", "Asia/Shanghai"),
             epd_model=os.getenv("EPD_MODEL", "epd7in5_V2"),
             mock_epd=os.getenv("MOCK_EPD", "false").lower() == "true",
+            use_grayscale=os.getenv("HARDWARE_USE_GRAYSCALE", "true").lower() == "true",
         )
 
 
