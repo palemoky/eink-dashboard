@@ -2,9 +2,15 @@
 
 [![Docker Hub](https://img.shields.io/docker/v/palemoky/eink-dashboard?label=Docker%20Hub&logo=docker)](https://hub.docker.com/r/palemoky/eink-dashboard)
 [![Docker Image Size](https://img.shields.io/docker/image-size/palemoky/eink-dashboard/latest)](https://hub.docker.com/r/palemoky/eink-dashboard)
-[![GitHub](https://img.shields.io/github/license/palemoky/eink-dashboard)](https://github.com/palemoky/eink-dashboard)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/palemoky/eink-dashboard/release.yml)](https://github.com/palemoky/eink-dashboard/actions)
-[![Test Coverage](https://img.shields.io/badge/coverage-38%25-yellow)](https://github.com/palemoky/eink-dashboard)
+[![Test Coverage](https://img.shields.io/badge/coverage-54%25-green)](https://github.com/palemoky/eink-dashboard)
+[![Python](https://img.shields.io/badge/python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
+
+[![GitHub](https://img.shields.io/github/license/palemoky/eink-dashboard)](https://github.com/palemoky/eink-dashboard)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
 A modern, modular, and highly customizable dashboard for Waveshare E-Ink displays. Built with Python 3.14+ using async/await patterns and a clean, testable architecture.
 
@@ -97,7 +103,7 @@ docker-compose up -d
 - **Graceful Shutdown** - Proper SIGTERM/SIGINT handling
 
 ### 🧪 Quality & Testing
-- **Unit Tests** - 34 tests with 38% coverage
+- **Unit Tests** - 90 tests with 54% coverage
 - **Core Modules** - 77%+ coverage on critical components
 - **CI/CD** - Automated testing and Docker builds
 - **Type Checking** - mypy validation
@@ -459,7 +465,7 @@ src/
 └── drivers/                   # Hardware drivers
     └── factory.py            # Driver factory with mock support
 
-tests/                         # Unit tests (34 tests, 38% coverage)
+tests/                         # Unit tests (90 tests, 54% coverage)
 ├── test_core.py              # Core infrastructure tests
 ├── test_advanced.py          # Advanced features tests
 ├── test_architecture.py      # Architecture pattern tests
