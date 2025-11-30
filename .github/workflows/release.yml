@@ -116,8 +116,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "⏳ Waiting 30 seconds for GHCR to sync..."
-          sleep 30
           chmod +x .github/scripts/cleanup-ghcr-untagged.sh
           .github/scripts/cleanup-ghcr-untagged.sh "${{ env.PACKAGE_NAME }}" "${{ env.OWNER }}"
 
