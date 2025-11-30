@@ -48,10 +48,35 @@ class QuoteLayout:
         margin_y = 80
         content_width = width - 2 * margin_x
 
+        # Calculate available height for content (excluding margins, author, and decorations)
+        # Total height = margin_y (top) + content + line_spacing + author_height + margin_y (bottom)
+        # We reserve space for author/source (~80px) and margins
+        max_content_height = height - (margin_y * 2) - 100
+
         # Font sizes
         quote_font_size = 40
-        author_font_size = 32
+        min_font_size = 20
         line_spacing = 20
+
+        # Dynamic font scaling loop
+        wrapped_lines = []
+        total_content_height = 0
+
+        while quote_font_size >= min_font_size:
+            # Wrap text with current font size
+            wrapped_lines = self._wrap_text(content, quote_font_size, content_width)
+
+            # Calculate total height
+            total_content_height = len(wrapped_lines) * (quote_font_size + line_spacing)
+
+            if total_content_height <= max_content_height:
+                break
+
+            quote_font_size -= 2
+
+        if quote_font_size < min_font_size:
+            logger.warning("Quote content too long even with minimum font size")
+            quote_font_size = min_font_size
 
         # Draw opening quotation mark (no anchor for special Unicode chars)
         opening_quote = "\u201c"  # Left double quotation mark
@@ -63,31 +88,40 @@ class QuoteLayout:
             self.renderer.font_xl,
         )
 
-        # Wrap text to fit width
-        wrapped_lines = self._wrap_text(content, quote_font_size, content_width)
-
-        # Calculate total content height
-        total_content_height = len(wrapped_lines) * (quote_font_size + line_spacing)
-
         # Center vertically
+        # Recalculate start_y based on actual content height
         start_y = (height - total_content_height) // 2
+
+        # Ensure we don't start too high (overlapping with top margin/quote mark)
+        start_y = max(start_y, margin_y)
 
         # Draw quote content
         current_y = start_y
+
+        # Load font for current size
+        try:
+            from PIL import ImageFont
+
+            font_path = self.renderer.font_path
+            current_font = ImageFont.truetype(font_path, quote_font_size)
+        except Exception:
+            logger.warning("Failed to load dynamic font, using default")
+            current_font = self.renderer.font_l
+
         for line in wrapped_lines:
             # Calculate text width for centering
             try:
-                bbox = draw.textbbox((0, 0), line, font=self.renderer.font_l)
+                bbox = draw.textbbox((0, 0), line, font=current_font)
                 text_width = bbox[2] - bbox[0]
             except AttributeError:
-                text_width, _ = draw.textsize(line, font=self.renderer.font_l)
+                text_width, _ = draw.textsize(line, font=current_font)
 
             self.renderer.draw_text(
                 draw,
                 (width - text_width) // 2,
                 current_y,
                 line,
-                self.renderer.font_l,
+                current_font,
             )
             current_y += quote_font_size + line_spacing
 
@@ -143,7 +177,7 @@ class QuoteLayout:
         # Draw subtle corner decorations
         self._draw_corner_decorations(draw, width, height)
 
-        logger.info(f"Created quote layout: {author}")
+        logger.info(f"Created quote layout: {author} (font size: {quote_font_size})")
         return image
 
     def _wrap_text(self, text: str, font_size: int, max_width: int) -> list[str]:
