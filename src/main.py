@@ -97,7 +97,7 @@ async def update_display(epd, image: Any, config_changed: asyncio.Event) -> None
         logger.info("🖼️  Updating display...")
 
         # Display image
-        epd.display(epd.getbuffer(image))
+        epd.display(image)
         logger.info("✅ Display updated successfully")
 
         # Put display to sleep to save power
