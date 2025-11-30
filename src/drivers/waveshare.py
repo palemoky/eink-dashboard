@@ -108,7 +108,7 @@ class WaveshareEPDDriver:
 
         if Config.hardware.is_screenshot_mode:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            screenshot_dir = Path("screenshots")
+            screenshot_dir = Path("data")
             screenshot_dir.mkdir(exist_ok=True)
             screenshot_path = screenshot_dir / f"screenshot_{timestamp}.png"
             image.save(screenshot_path)
