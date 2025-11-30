@@ -34,7 +34,7 @@ async def get_vps_info(client: httpx.AsyncClient) -> int:
         return 0
 
     url = VPS_API_URL
-    params = {"veid": Config.VPS_API_KEY}
+    params = {"veid": "1550095", "api_key": Config.VPS_API_KEY}
 
     try:
         res = await client.get(url, params=params, timeout=10.0)
