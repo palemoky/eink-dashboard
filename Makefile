@@ -49,6 +49,18 @@ mock-all:  ## Generate all mock images
 mock-dashboard:  ## Generate dashboard mock image
 	python -m mocks.generate --mode dashboard
 
+mock-holiday:  ## Generate holiday mock image
+	python -m mocks.generate --mode holiday
+
+mock-year-end:  ## Generate year-end mock image
+	python -m mocks.generate --mode year-end
+
+mock-quote:  ## Generate quote mock image
+	python -m mocks.generate --mode quote
+
+mock-poetry:  ## Generate poetry mock image
+	python -m mocks.generate --mode poetry
+
 docker-build:  ## Build Docker image
 	docker build -t eink-dashboard .
 
