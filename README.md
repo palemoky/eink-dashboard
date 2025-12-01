@@ -26,18 +26,18 @@ The easiest way to run is using Docker - it handles all dependencies and driver 
 | ![Todo](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/dashboard-todo.png) | ![HackerNews](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/dashboard-hackernews.png) |
 
 ### 🥷 Other Modes
-| Quote | Poetry | Wallpaper |
-|--------|-----------|-----------|
-| ![Quote](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/quote.png) | ![Poetry](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/poetry.png) | ![Wallpaper](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/wallpaper.png) |
+| Quote | Poetry | Wallpaper |Year-End Summary |
+|--------|-----------|-----------|----------|
+| ![Quote](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/quote.png) | ![Poetry](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/poetry.png) | ![Wallpaper](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/wallpaper.png)| ![Year-End Summary](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/year_end_summary.png) |
 
 ### 🎉 Special Days
-| Birthday | Anniversary | Year-End |
+| Birthday | Anniversary | Valentine's Day |
 |---------|-------------|----------|
-| ![Birthday](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/birthday.png) | ![Anniversary](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/anniversary.png) | ![Year-End Summary](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/year_end_summary.png) |
+| ![Birthday](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/birthday.png) | ![Anniversary](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/anniversary.png) | ![Valentine's Day](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/valentines_day.png) |
 
-| New Year | Christmas | Spring Festival | Mid-Autumn Festival |
+| New Year |  Spring Festival | Mid-Autumn Festival |Christmas |
 |----------|----------|----------------|---------------------|
-| ![New Year](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/new_year.png) | ![Christmas](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/christmas.png) | ![Spring Festival](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/spring_festival.png) | ![Mid-Autumn Festival](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/mid_autumn_festival.png) |
+| ![New Year](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/new_year.png) | ![Spring Festival](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/spring_festival.png) | ![Mid-Autumn Festival](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/mid_autumn_festival.png) | ![Christmas](https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/screenshots/christmas.png) |
 
 ### Pull and Run
 

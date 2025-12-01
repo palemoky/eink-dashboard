@@ -187,6 +187,9 @@ class HolidayIcons:
                     self.draw_cake(draw, center_x, icon_y, size=80)
                 case "heart":
                     self.draw_heart(draw, center_x, icon_y, size=80)
+                case "love":
+                    # Use love.png image for Valentine's Day
+                    self.draw_image_icon(draw, center_x, icon_y, f"{icon_path}/love.png", size=100)
                 case "lantern":
                     # Use image instead of drawing for better quality
                     self.draw_image_icon(

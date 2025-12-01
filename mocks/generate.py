@@ -158,6 +158,7 @@ def generate_all_images(output_dir="mocks/images"):
     holidays = [
         "New Year",
         "Spring Festival",
+        "Valentine's Day",
         "Mid-Autumn",
         "Christmas",
         "Birthday",

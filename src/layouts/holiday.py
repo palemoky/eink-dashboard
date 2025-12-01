@@ -76,6 +76,13 @@ class HolidayManager:
                     "message": "New Beginnings",
                     "icon": "firework",
                 }
+            case "02-14":
+                return {
+                    "name": "Valentine's Day",
+                    "title": "Happy Valentine's Day!",
+                    "message": "Love & Romance",
+                    "icon": "love",
+                }
             case "12-31":
                 return {
                     "name": "New Year's Eve",

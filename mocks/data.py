@@ -58,6 +58,12 @@ def get_mock_holiday_data(holiday_name: str = "Spring Festival") -> dict:
             "message": "Spring Festival",
             "icon": "lantern",
         },
+        "Valentine's Day": {
+            "name": "Valentine's Day",
+            "title": "Happy Valentine's Day!",
+            "message": "Love & Romance",
+            "icon": "love",
+        },
         "Mid-Autumn": {
             "name": "Mid-Autumn",
             "title": "Mid-Autumn Festival",
