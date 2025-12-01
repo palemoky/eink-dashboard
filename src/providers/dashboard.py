@@ -240,7 +240,7 @@ async def get_github_year_summary(client: httpx.AsyncClient):
 
         # Calculate language statistics
         repos = user_data.get("repositories", {}).get("nodes", [])
-        language_counts = {}
+        language_counts: dict[str, int] = {}
         total_stars = 0
 
         for repo in repos:
