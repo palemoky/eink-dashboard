@@ -74,7 +74,14 @@ class HolidayManager:
                     "name": "New Year",
                     "title": f"Hello {now.year}!",
                     "message": "New Beginnings",
-                    "icon": "star",
+                    "icon": "firework",
+                }
+            case "12-31":
+                return {
+                    "name": "New Year's Eve",
+                    "title": f"Goodbye {now.year}!",
+                    "message": "Year-End Celebration",
+                    "icon": "celebration",
                 }
             case "12-25":
                 return {
@@ -98,7 +105,7 @@ class HolidayManager:
                     "name": "Mid-Autumn",
                     "title": "Mid-Autumn Festival",
                     "message": "Mooncake & Family",
-                    "icon": "lantern",
+                    "icon": "mooncake",
                 }
 
         # 6. 特殊逻辑：除夕 (需要计算明天是否是正月初一)
@@ -109,7 +116,7 @@ class HolidayManager:
                 "name": "New Year's Eve",
                 "title": "Happy New Year's Eve",
                 "message": "Reunion Dinner",
-                "icon": "lantern",
+                "icon": "firecracker",
             }
 
         return None
