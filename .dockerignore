@@ -60,3 +60,6 @@ logs
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Fonts (downloaded on-demand in poetry mode)
+fonts/

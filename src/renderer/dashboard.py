@@ -3,12 +3,17 @@
 Coordinates text, shapes, and icon rendering using modular components.
 """
 
+import logging
+import os
+
 from PIL import ImageFont
 
 from ..config import Config
 from .icons import HolidayIcons, WeatherIcons
 from .shapes import ShapeRenderer
 from .text import TextRenderer
+
+logger = logging.getLogger(__name__)
 
 
 class DashboardRenderer:
@@ -34,21 +39,41 @@ class DashboardRenderer:
         self.holiday_icons = HolidayIcons()
 
     def _load_fonts(self):
-        """Load fonts for rendering."""
+        """Load fonts for rendering.
+
+        Note: WaveShare font should be downloaded on application startup via
+        ensure_fonts() in main.py. This method just loads the font file.
+        """
+        from ..utils.fonts import FontManager
+
+        # Get WaveShare font path (should already be downloaded)
+        font_path = FontManager.get_font_path("WaveShare.ttc")
+
+        # Fall back to Config.FONT_PATH if FontManager returns invalid path
+        if not os.path.exists(font_path):
+            logger.warning(f"Font not found at {font_path}, using Config.FONT_PATH")
+            font_path = Config.FONT_PATH
+
         try:
-            fp = Config.FONT_PATH
-            self.font_xs = ImageFont.truetype(fp, 18)
-            self.font_s = ImageFont.truetype(fp, 24)
-            self.font_m = ImageFont.truetype(fp, 28)
-            self.font_value = ImageFont.truetype(fp, 32)
-            self.font_date_big = ImageFont.truetype(fp, 34)
-            self.font_date_small = ImageFont.truetype(fp, 24)
-            self.font_commits = ImageFont.truetype(fp, 20)
-            self.font_l = ImageFont.truetype(fp, 48)
-            self.font_xl = ImageFont.truetype(fp, 60)
-        except IOError:
-            self.font_s = self.font_m = self.font_l = self.font_xl = ImageFont.load_default()
-            self.font_xs = self.font_value = self.font_date_big = self.font_date_small = self.font_s
+            self.font_xs = ImageFont.truetype(font_path, 18)
+            self.font_s = ImageFont.truetype(font_path, 24)
+            self.font_m = ImageFont.truetype(font_path, 28)
+            self.font_value = ImageFont.truetype(font_path, 32)
+            self.font_date_big = ImageFont.truetype(font_path, 34)
+            self.font_date_small = ImageFont.truetype(font_path, 24)
+            self.font_commits = ImageFont.truetype(font_path, 20)
+            self.font_l = ImageFont.truetype(font_path, 48)
+            self.font_xl = ImageFont.truetype(font_path, 60)
+            logger.debug(f"Loaded fonts from {font_path}")
+        except (IOError, OSError) as e:
+            logger.warning(f"Failed to load font {font_path}: {e}, using default font")
+            # Fallback to PIL default font
+            default_font = ImageFont.load_default()
+            self.font_s = self.font_m = self.font_l = self.font_xl = default_font
+            self.font_xs = self.font_value = self.font_date_big = self.font_date_small = (
+                default_font
+            )
+            self.font_commits = default_font
 
     # Convenience methods that delegate to component renderers
 

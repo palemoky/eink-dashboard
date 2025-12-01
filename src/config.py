@@ -263,7 +263,7 @@ class TODOConfig(BaseModel):
 
 
 # Default path constants
-DEFAULT_FONT_PATH = str(BASE_DIR / "resources/fonts/WaveShare.ttc")
+DEFAULT_FONT_PATH = str(BASE_DIR / "fonts/WaveShare.ttc")
 DEFAULT_DATA_DIR = BASE_DIR / "data"
 
 

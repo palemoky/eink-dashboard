@@ -10,15 +10,11 @@ import os
 
 from PIL import Image, ImageDraw, ImageFont
 
-from ..config import BASE_DIR
 from ..renderer.dashboard import DashboardRenderer
+from ..utils.fonts import FontManager
 from .utils.layout_helper import LayoutConstants, LayoutHelper
 
 logger = logging.getLogger(__name__)
-
-# Font paths
-POETRY_FONT = str(BASE_DIR / "resources/fonts/LXGWWenKai-Regular.ttf")
-SEAL_FONT = str(BASE_DIR / "resources/fonts/WangHanZong-Lishu.ttf")
 
 
 class PoetryLayout:
@@ -28,8 +24,19 @@ class PoetryLayout:
         """Initialize poetry layout with renderer."""
         self.renderer = DashboardRenderer()
         self.layout = LayoutHelper(use_grayscale=False)
-        self.font_path = POETRY_FONT
-        self.seal_font_path = SEAL_FONT if os.path.exists(SEAL_FONT) else POETRY_FONT
+
+        # Resolve fonts using FontManager
+        self.font_path = FontManager.get_font_path(
+            "LXGWWenKai-Regular.ttf", url=FontManager.LXGW_WENKAI_URL
+        )
+
+        # Try to load seal font, fallback to poetry font if missing
+        self.seal_font_path = FontManager.get_font_path(
+            "WangHanZong-Lishu.ttf", url=FontManager.WANGHANZONG_LISHU_URL
+        )
+        if not os.path.exists(self.seal_font_path):
+            logger.info("Seal font not found, falling back to poetry font")
+            self.seal_font_path = self.font_path
 
     def create_poetry_image(self, width: int, height: int, poetry: dict) -> Image.Image:
         """Create elegant vertical poetry image with intelligent layout.

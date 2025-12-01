@@ -77,6 +77,36 @@ signal.signal(signal.SIGTERM, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
 
 
+def ensure_fonts() -> None:
+    """Ensure required fonts are available, downloading if necessary.
+
+    This function is called on application startup to ensure the WaveShare font
+    (required for dashboard, quote, and other modes) is available. If download
+    fails, the application will fall back to PIL's default font.
+    """
+    try:
+        from .utils.fonts import FontManager
+
+        logger.info("🔤 Checking font availability...")
+
+        # Download WaveShare font (required for all modes)
+        font_path = FontManager.get_font_path("WaveShare.ttc", url=FontManager.WAVESHARE_URL)
+
+        if os.path.exists(font_path):
+            logger.info(f"✅ WaveShare font available at {font_path}")
+        else:
+            logger.warning(
+                "⚠️  WaveShare font not found. Application will use default fonts. "
+                "For better display quality, ensure fonts are available in the fonts/ directory."
+            )
+
+    except Exception as e:
+        logger.warning(
+            f"⚠️  Font initialization failed: {e}. "
+            "Application will use default fonts with reduced quality."
+        )
+
+
 async def update_display(epd, image: Any, config_changed: asyncio.Event) -> None:
     """Update the E-Paper display with a new image.
 
@@ -171,6 +201,9 @@ async def main():
     # Validate configuration
     Config.validate_required()
     _log_startup_info()
+
+    # Ensure fonts are available (download if necessary)
+    ensure_fonts()
 
     # Initialize components
     epd = get_driver()
