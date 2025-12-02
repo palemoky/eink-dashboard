@@ -268,12 +268,20 @@ def parse_markdown_todo(content: str) -> tuple[list[str], list[str], list[str]]:
             # 移除列表标记
             item = line[2:].strip()
 
-            # 如果是任务列表格式 (- [ ] 或 - [x])，移除复选框
-            if item.startswith("[ ]") or item.startswith("[x]") or item.startswith("[X]"):
+            # 检查是否是任务列表格式并标记完成状态
+            is_completed = False
+            if item.startswith("[ ]"):
                 item = item[3:].strip()
+            elif item.startswith("[x]") or item.startswith("[X]"):
+                item = item[3:].strip()
+                is_completed = True
 
             if not item:
                 continue
+
+            # 如果已完成，添加特殊标记前缀
+            if is_completed:
+                item = "✓" + item
 
             match current_section:
                 case "goals":

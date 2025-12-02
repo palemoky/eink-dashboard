@@ -58,6 +58,7 @@ You can choose from four TODO data sources:
    - ✅ Supports `# Goals` or `## Goals` (single or double `#`)
    - ✅ Supports `- item` or `* item` (dash or asterisk)
    - ✅ Supports `- [ ] item` or `- [x] item` (task list format)
+   - ✅ **Completed items (`[x]`) will display with strikethrough effect** ~~like this~~
    - ✅ Section names are case-insensitive (`Optional`, `optional` both work)
 
 3. **Get Gist ID**

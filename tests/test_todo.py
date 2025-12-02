@@ -53,7 +53,9 @@ class TestMarkdownParsing:
 - [ ] Refactor
 """
         goals, must, optional = parse_markdown_todo(content)
-        assert goals == ["Python", "Rust"]
+
+        # Verify parsing - completed items should have ✓ marker
+        assert goals == ["Python", "✓Rust"]
         assert must == ["Fix bug", "Review code"]
         assert optional == ["Refactor"]
 
@@ -78,7 +80,10 @@ class TestMarkdownParsing:
         assert "Regular item" in goals
         assert "Item with asterisk" in goals
         assert len(must) == 2
+        assert "✓Completed task" in must
+        assert "Pending task" in must
         assert len(optional) == 1
+        assert "Optional task" in optional
 
     def test_case_insensitive_headers(self):
         """Test case insensitive section headers."""
@@ -166,7 +171,9 @@ Some random text
 - [ ] Not completed
 """
         goals, must, optional = parse_markdown_todo(content)
-        assert goals == ["Completed with uppercase", "Not completed"]
+
+        # Both [x] and [X] should be recognized as completed (with ✓ marker)
+        assert goals == ["✓Completed with uppercase", "Not completed"]
 
     def test_real_world_example(self):
         """Test parsing a real-world example."""
@@ -185,9 +192,12 @@ Some random text
 - [ ] Refactor legacy code
 """
         goals, must, optional = parse_markdown_todo(content)
+
+        # Verify all sections parsed correctly
+        # Completed items should have ✓ marker
         assert len(goals) == 2
         assert "English Practice (Daily)" in goals
-        assert "Gym Workout" in goals
+        assert "✓Gym Workout" in goals
         assert len(must) == 3
         assert "Fix authentication bug" in must
         assert "Review PR #456" in must

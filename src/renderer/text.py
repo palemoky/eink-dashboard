@@ -52,8 +52,12 @@ class TextRenderer:
         font: ImageFont.FreeTypeFont,
         max_width: int,
         fill: int | str = 0,
-    ):
-        """Draw text with truncation if it exceeds max width."""
+    ) -> tuple[int, int, int, int] | None:
+        """Draw text with truncation if it exceeds max width.
+
+        Returns:
+            Bounding box (x1, y1, x2, y2) of the drawn text, or None if no text drawn
+        """
 
         def get_w(t):
             try:
@@ -64,11 +68,16 @@ class TextRenderer:
 
         if get_w(text) <= max_width:
             draw.text((x, y), text, font=font, fill=fill)
-            return
+            bbox = draw.textbbox((x, y), text, font=font)
+            return bbox
 
         ellipsis = "..."
         for i in range(len(text), 0, -1):
             temp = text[:i]
             if get_w(temp) + get_w(ellipsis) <= max_width:
-                draw.text((x, y), temp + ellipsis, font=font, fill=fill)
-                return
+                final_text = temp + ellipsis
+                draw.text((x, y), final_text, font=font, fill=fill)
+                bbox = draw.textbbox((x, y), final_text, font=font)
+                return bbox
+
+        return None

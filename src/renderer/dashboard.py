@@ -87,7 +87,7 @@ class DashboardRenderer:
 
     def draw_truncated_text(self, draw, x, y, text, font, max_width, fill=0):
         """Draw truncated text (delegates to TextRenderer)."""
-        self.text.draw_truncated_text(draw, x, y, text, font, max_width, fill)
+        return self.text.draw_truncated_text(draw, x, y, text, font, max_width, fill)
 
     def draw_progress_ring(self, draw, x, y, radius, percent, thickness=5):
         """Draw progress ring (delegates to ShapeRenderer)."""

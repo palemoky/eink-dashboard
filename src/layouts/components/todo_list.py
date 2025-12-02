@@ -89,8 +89,16 @@ class TodoListComponent:
 
         for i, text in enumerate(items):
             y = self.LIST_START_Y + i * self.LINE_H
+
+            # Check if item is completed (marked with ✓)
+            is_completed = text.startswith("✓")
+            if is_completed:
+                text = text[1:].strip()  # Remove completion marker
+
             display_text = text if text == "..." else f"• {text}"
-            r.draw_truncated_text(
+
+            # Draw text and get bounding box
+            bbox = r.draw_truncated_text(
                 draw,
                 col["x"],
                 y,
@@ -98,6 +106,43 @@ class TodoListComponent:
                 r.font_s,
                 col["max_w"],
             )
+
+            # Draw strikethrough if completed (skip bullet point)
+            if is_completed and bbox:
+                self._draw_strikethrough(draw, col["x"], y, bbox, display_text)
+
+    def _draw_strikethrough(
+        self,
+        draw: ImageDraw.ImageDraw,
+        x: int,
+        y: int,
+        bbox: tuple[int, int, int, int],
+        display_text: str,
+    ) -> None:
+        """Draw strikethrough line over completed text, skipping bullet point.
+
+        Args:
+            draw: PIL ImageDraw object
+            x: Starting x position
+            y: Text baseline y position
+            bbox: Text bounding box (x1, y1, x2, y2)
+            display_text: The full display text (e.g., "• Item")
+        """
+        # Calculate strikethrough position (middle of text height)
+        text_height = bbox[3] - bbox[1]
+        line_y = y + text_height // 2
+
+        # Calculate bullet point width to skip it
+        # If text starts with "• ", skip the bullet and space
+        if display_text.startswith("• "):
+            bullet_width = draw.textlength("• ", font=self.renderer.font_s)
+            line_x1 = x + bullet_width
+        else:
+            line_x1 = x
+
+        # Draw strikethrough line (only over the text, not the bullet)
+        line_x2 = bbox[2]
+        draw.line([(line_x1, line_y), (line_x2, line_y)], fill=0, width=2)
 
     def _limit_list_items(self, src_list: list[str], max_lines: int) -> list[str]:
         """Limit list items and add ellipsis if truncated."""
