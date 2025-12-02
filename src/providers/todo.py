@@ -75,28 +75,37 @@ async def get_todo_from_gist() -> tuple[list[str], list[str], list[str]]:
             res = await client.get(url, headers=headers, timeout=10)
             res.raise_for_status()
 
+            logger.info(f"✅ Successfully fetched gist {Config.GIST_ID}")
+
             data = res.json()
             # 查找 todo.md 或第一个 .md 文件
             files = data.get("files", {})
+            logger.info(f"📁 Files in gist: {list(files.keys())}")
             content = None
 
             if "todo.md" in files:
                 content = files["todo.md"]["content"]
+                logger.info(f"📄 Found todo.md, content length: {len(content)} chars")
             else:
                 # 使用第一个 markdown 文件
                 for filename, file_data in files.items():
                     if filename.endswith(".md"):
                         content = file_data["content"]
+                        logger.info(f"📄 Using {filename}, content length: {len(content)} chars")
                         break
 
             if content:
-                return parse_markdown_todo(content)
+                result = parse_markdown_todo(content)
+                logger.info(
+                    f"✅ Parsed TODO from gist: {len(result[0])} goals, {len(result[1])} must, {len(result[2])} optional"
+                )
+                return result
             else:
-                logger.warning("No markdown file found in gist")
+                logger.warning("⚠️ No markdown file found in gist, falling back to config")
                 return get_todo_from_config()
 
         except Exception as e:
-            logger.error(f"Failed to fetch gist: {e}")
+            logger.error(f"❌ Failed to fetch gist: {e}")
             raise
 
 
@@ -217,42 +226,65 @@ def parse_markdown_todo(content: str) -> tuple[list[str], list[str], list[str]]:
     """
     解析 Markdown 格式的 TODO 列表
 
-    格式:
-    ## Goals
-    - Item 1
-    - Item 2
+    支持格式:
+    1. 简单列表:
+       ## Goals
+       - Item 1
+       - Item 2
 
-    ## Must
-    - Item 1
+    2. GitHub 任务列表:
+       ## Must
+       - [ ] Item 1
+       - [x] Item 2
 
-    ## Optional
-    - Item 1
+    3. 混合格式:
+       ## Optional
+       * Item 1
+       - [ ] Item 2
     """
+    logger.debug(f"Parsing markdown content (first 200 chars): {content[:200]}")
+
     goals, must, optional = [], [], []
     current_section = None
 
     for line in content.split("\n"):
         line = line.strip()
+        line_lower = line.lower()
 
-        # 检测章节标题
-        if line.startswith("## Goals") or line.startswith("# Goals"):
+        # 检测章节标题（不区分大小写，支持常见拼写变体）
+        # 使用 'in' 而不是 'startswith' 来更灵活地匹配
+        if (line_lower.startswith("##") or line_lower.startswith("#")) and "goal" in line_lower:
             current_section = "goals"
-        elif line.startswith("## Must") or line.startswith("# Must"):
+            logger.debug(f"Found Goals section: {line}")
+        elif (line_lower.startswith("##") or line_lower.startswith("#")) and "must" in line_lower:
             current_section = "must"
-        elif line.startswith("## Optional") or line.startswith("# Optional"):
+            logger.debug(f"Found Must section: {line}")
+        elif (line_lower.startswith("##") or line_lower.startswith("#")) and "opt" in line_lower:
+            # 匹配 "optional", "optinal", "option" 等变体
             current_section = "optional"
-        # 检测列表项
+            logger.debug(f"Found Optional section: {line}")
+        # 检测列表项（支持简单列表和任务列表）
         elif line.startswith("- ") or line.startswith("* "):
+            # 移除列表标记
             item = line[2:].strip()
+
+            # 如果是任务列表格式 (- [ ] 或 - [x])，移除复选框
+            if item.startswith("[ ]") or item.startswith("[x]") or item.startswith("[X]"):
+                item = item[3:].strip()
+
             if not item:
                 continue
 
             match current_section:
                 case "goals":
                     goals.append(item)
+                    logger.debug(f"  Added to goals: {item}")
                 case "must":
                     must.append(item)
+                    logger.debug(f"  Added to must: {item}")
                 case "optional":
                     optional.append(item)
+                    logger.debug(f"  Added to optional: {item}")
 
+    logger.debug(f"Parsed result: {len(goals)} goals, {len(must)} must, {len(optional)} optional")
     return goals, must, optional

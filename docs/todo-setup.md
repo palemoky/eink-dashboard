@@ -21,10 +21,14 @@ You can choose from four TODO data sources:
    - Make it **Private**
 
 2. **Format Your TODO**
+
+   Multiple formats are supported:
+
+   **Simple list format:**
    ```markdown
    ## Goals
    - English Practice (Daily)
-   - Daily Gym Workout Routine
+   - Daily Gym Workout
 
    ## Must
    - Fix bug #123
@@ -34,6 +38,27 @@ You can choose from four TODO data sources:
    - Read documentation
    - Refactor code
    ```
+
+   **GitHub task list format:**
+   ```markdown
+   ## Goals
+   - [ ] English Practice (Daily)
+   - [x] Daily Gym Workout
+
+   ## Must
+   - [ ] Fix bug #123
+   - [ ] Review PR #456
+
+   ## Optional
+   - [ ] Read documentation
+   - [ ] Refactor code
+   ```
+
+   **Notes:**
+   - ✅ Supports `# Goals` or `## Goals` (single or double `#`)
+   - ✅ Supports `- item` or `* item` (dash or asterisk)
+   - ✅ Supports `- [ ] item` or `- [x] item` (task list format)
+   - ✅ Section names are case-insensitive (`Optional`, `optional` both work)
 
 3. **Get Gist ID**
    - After creating, your URL will be: `https://gist.github.com/username/abc123def456`
