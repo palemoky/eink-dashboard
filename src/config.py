@@ -65,12 +65,10 @@ class DisplayConfig(BaseModel):
     hackernews_stories_per_page: int = Field(
         default=5, description="Number of stories per page", ge=1, le=50
     )
-    # Time slots for TODO/HN switching (format: "0-12,18-24" means show during these hours)
+    # Time slots for TODO display (format: "0-12,18-24" means show during these hours)
+    # HackerNews will automatically show during non-TODO hours
     todo_time_slots: str = Field(
         default="0-12,18-24", description="Time slots for TODO display (hour ranges)"
-    )
-    hackernews_time_slots: str = Field(
-        default="12-18", description="Time slots for HackerNews display (hour ranges)"
     )
 
     @classmethod
@@ -90,7 +88,6 @@ class DisplayConfig(BaseModel):
             hackernews_page_seconds=int(os.getenv("HACKERNEWS_PAGE_SECONDS", "30")),
             hackernews_stories_per_page=int(os.getenv("HACKERNEWS_STORIES_PER_PAGE", "5")),
             todo_time_slots=os.getenv("TODO_TIME_SLOTS", "0-12,18-24"),
-            hackernews_time_slots=os.getenv("HACKERNEWS_TIME_SLOTS", "12-18"),
         )
 
 

@@ -346,10 +346,10 @@ class Dashboard:
 
         now = pendulum.now(Config.hardware.timezone)
         todo_slots = TimeSlots(Config.display.todo_time_slots)
-        hn_slots = TimeSlots(Config.display.hackernews_time_slots)
 
+        # Show TODO during configured slots, HackerNews during all other hours
         show_todo = todo_slots.contains_hour(now.hour)
-        show_hackernews = hn_slots.contains_hour(now.hour)
+        show_hackernews = not show_todo
 
         data = {
             "weather": {},
