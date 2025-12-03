@@ -3,7 +3,7 @@
 [![Docker Hub](https://img.shields.io/docker/v/palemoky/eink-dashboard?label=Docker%20Hub&logo=docker)](https://hub.docker.com/r/palemoky/eink-dashboard)
 [![Docker Image Size](https://img.shields.io/docker/image-size/palemoky/eink-dashboard/latest)](https://hub.docker.com/r/palemoky/eink-dashboard)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/palemoky/eink-dashboard/release.yml)](https://github.com/palemoky/eink-dashboard/actions)
-[![Test Coverage](https://img.shields.io/badge/coverage-54%25-green)](https://github.com/palemoky/eink-dashboard)
+[![Test Coverage](https://img.shields.io/badge/coverage-66%25-green)](https://github.com/palemoky/eink-dashboard)
 [![Python](https://img.shields.io/badge/python-3.14-blue?logo=python&logoColor=white)](https://www.python.org/)
 
 [![GitHub](https://img.shields.io/github/license/palemoky/eink-dashboard)](https://github.com/palemoky/eink-dashboard)
@@ -102,7 +102,7 @@ docker-compose up -d
 - **Graceful Shutdown** - Proper SIGTERM/SIGINT handling
 
 ### 🧪 Quality & Testing
-- **Unit Tests** - 90 tests with 54% coverage
+- **Unit Tests** - 66% coverage
 - **Core Modules** - 77%+ coverage on critical components
 - **CI/CD** - Automated testing and Docker builds
 - **Type Checking** - mypy validation
@@ -521,11 +521,6 @@ uv run pytest tests/test_core.py -v
 # Run with coverage
 uv run pytest tests/ --cov=src --cov-report=term-missing
 ```
-
-## 🎯 Roadmap
-
-- [ ] Increase test coverage to 60%+
-- [ ] Add integration tests
 
 ## 🤝 Contributing
 
