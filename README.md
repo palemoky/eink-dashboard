@@ -1,7 +1,7 @@
 <h1 align="center">
     <img src="https://raw.githubusercontent.com/palemoky/eink-dashboard/main/docs/logo.png" alt="Logo" width="128" />
   <br>
-  Powered by Pi. Rendered in Pixels.
+  Powered by Pi, rendered in Pixels.
   <br>
 </h1>
 
