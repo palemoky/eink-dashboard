@@ -3,12 +3,13 @@ services:
   eink-dashboard:
     image: palemoky/eink-dashboard:latest
     container_name: eink-dashboard
-    privileged: true # 必须，为了访问 GPIO
+    restart: unless-stopped
+    privileged: true # MUST, for GPIO
+    env_file:
+      - .env
     devices:
-      - /dev/spidev0.0:/dev/spidev0.0 # SPI 接口
+      - /dev/spidev0.0:/dev/spidev0.0
     environment:
       - TZ=${TIMEZONE:-Asia/Shanghai}
     volumes:
-      - ./.env:/app/.env:ro  # 只读挂载 .env
-      - ./data:/app/data     # 挂载数据目录 (存放 cache.json 和 screenshot.bmp)
-    restart: unless-stopped
+      - ./data:/app/data
