@@ -649,11 +649,12 @@ MIT License - Copyright © 2025 Palemoky
 
 - [Waveshare](https://www.waveshare.com/) for E-Ink display drivers
 - [Chinese Poetry](https://github.com/chinese-poetry/chinese-poetry) for poetry
-- [LxgwWenKai](https://github.com/lxgw/LxgwWenKai) for font
-- [Hanyi](https://hanyi.com.cn/) for font
+- [LxgwWenKai](https://github.com/lxgw/LxgwWenKai), [Hanyi](https://hanyi.com.cn/) for font
 - [Flaticon](https://www.flaticon.com/) for icons
 - [Figma](https://www.figma.com/) for UI design
 - [CoinGecko](https://www.coingecko.com/) for BTC price
 - [OpenWeatherMap](https://openweathermap.org/) for weather
+- [Weather Icons](https://github.com/erikflowers/weather-icons) for weather icons
 - [HackerNews](https://news.ycombinator.com/) for HackerNews
+
 - All the open-source libraries that make this project possible
